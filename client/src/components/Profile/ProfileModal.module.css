@@ -1,0 +1,143 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 41, 59, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modalCard {
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 40px rgba(99,54,224,0.10), 0 1.5px 6px rgba(0,0,0,0.03);
+  padding: 2rem 2.5rem 2rem 2.5rem;
+  min-width: 320px;
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  animation: modalIn 0.18s cubic-bezier(.4,0,.2,1);
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.98);}
+  to   { opacity: 1; transform: translateY(0) scale(1);}
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+
+.accountName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #6336e0; /* Starling purple */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountType {
+  font-size: 0.98rem;
+  color: #00c3a9; /* Starling teal */
+  font-weight: 500;
+  white-space: nowrap;
+  margin-left: 1.5rem;
+}
+
+.avatar {
+  font-size: 2.2rem;
+  margin: 0 auto 1.2rem auto;
+  display: block;
+  color: #6336e0;
+
+}
+
+.prefList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.2rem 0;
+}
+
+.prefItem {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+.prefItem span {
+  color: #22223b;
+}
+
+.closeBtn {
+  margin-top: 0.5rem;
+  background: #6336e0;
+  color: #fff;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s;
+  box-shadow: 0 1px 4px rgba(99,54,224,0.08);
+  align-self: center;
+}
+.closeBtn:hover {
+  background: #00c3a9;
+}
+
+
+.toggle-switch {
+  position: relative;
+  width: 38px;
+  height: 20px;
+  display: inline-block;
+  margin-right: 0.7rem;
+  vertical-align: middle;
+}
+
+.toggle-switch input[type="checkbox"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: not-allowed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #d1d5db;
+  border-radius: 20px;
+  transition: background 0.2s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #6336e0;
+}
+
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(18px);
+}
+
