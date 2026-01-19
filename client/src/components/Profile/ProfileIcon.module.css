@@ -1,0 +1,17 @@
+.profile-btn {
+  font-size: 2rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4rem;
+}
+.profile-btn:hover {
+  background: #e0e7ef;
+}

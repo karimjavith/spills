@@ -1,0 +1,4 @@
+- Fetch and display transactions for a given week
+- Round up the transaction
+- Create/List savings goal
+- Transfer the round up amount for a given week to the savings goal

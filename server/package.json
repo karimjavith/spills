@@ -1,0 +1,20 @@
+{
+  "name": "starling-proxy",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start:proxy": "node server.js",
+    "test:proxy": "DOTENV_CONFIG_PATH=.env.test vitest"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "morgan": "^1.10.1",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2",
+    "vitest": "^4.0.17"
+  }
+}
