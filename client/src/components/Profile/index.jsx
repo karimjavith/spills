@@ -4,7 +4,12 @@ import ProfileIcon from './ProfileIcon';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAccount } from '../../store/accountSlice';
 
-
+/**
+ * Fetches the user's accounts on mount, selects the first account,
+ * and dispatches it to the Redux store. Renders a profile icon displaying account information.
+ *
+ * @returns {JSX.Element} The rendered profile component
+ */
 export default function Profile() {
   const dispatch = useDispatch();
   const account = useSelector((state) => state.account.account);
@@ -13,15 +18,15 @@ export default function Profile() {
 
   useEffect(() => {
     getAccounts()
-      .then(data => {
+      .then((data) => {
         if (data.accounts && data.accounts.length > 0) {
-          dispatch(setAccount(data.accounts[0]));
+          dispatch(setAccount(data.accounts[0])); // This is intentional for this testing/demo app. We can fetch multiple accounts later if required.
         } else {
           console.log('No accounts found in response:', data);
         }
       })
       .catch((e) => {
-        setError('Failed to fetch account: ' + e.message)
+        setError('Failed to fetch account: ' + e.message);
         console.error('Error fetching accounts:', e);
       })
       .finally(() => setLoading(false));

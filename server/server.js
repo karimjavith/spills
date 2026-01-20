@@ -7,17 +7,58 @@ dotenv.config({ path: process.env.DOTENV_CONFIG_PATH });
 
 
 
+/**
+ * Express application instance configured with middleware for logging, CORS, and JSON parsing.
+ */
 const app = express();
 app.use(morgan('dev')); // for logging requests and responses
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json());
 
+/**
+ * Base URL for the Starling Bank API endpoints.
+ *
+ * @type {string}
+ */
 const API_BASE = process.env.STARLING_API_BASE;
+/**
+ * URL for OAuth token endpoints used for authentication.
+ *
+ * @type {string}
+ */
 const OAUTH_URL = process.env.STARLING_OAUTH_URL;
+/**
+ * OAuth client ID for Starling API authentication.
+ *
+ * @type {string}
+ */
 const CLIENT_ID = process.env.STARLING_CLIENT_ID;
+/**
+ * OAuth client secret for Starling API authentication.
+ *
+ * @type {string}
+ */
 const CLIENT_SECRET = process.env.STARLING_CLIENT_SECRET;
+/**
+ * Current access token for Starling API authentication.
+ *
+ * @type {string}
+ */
 let accessToken = process.env.STARLING_ACCESS_TOKEN;
+/**
+ * Refresh token used to obtain new access tokens when they expire.
+ *
+ * @type {string}
+ */
 let refreshToken = process.env.STARLING_REFRESH_TOKEN;
+
+/**
+ * Refreshes the access token using the refresh token when the current access token expires.
+ * Since the access token can expire in 24hours, we need to refresh it when needed
+ * @async
+ * @returns {string} The new access token
+ * @throws {Error} If token refresh fails
+ */
 async function refreshAccessToken() {
  const params = new URLSearchParams({
     grant_type: 'refresh_token',
@@ -42,6 +83,13 @@ async function refreshAccessToken() {
   return accessToken;
 }
 
+/**
+ * Proxies incoming requests to the Starling Bank API, handling authentication and token refresh.
+ *
+ * @async
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
 async function proxyToStarling(req, res) {
   // Remove the /api/starling prefix to get the Starling endpoint
   const endpoint = req.originalUrl.replace(/^\/api\/starling/, '');
@@ -52,6 +100,7 @@ async function proxyToStarling(req, res) {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Accept': 'application/json',
+      'Content-Type': 'application/json',
       'User-Agent': 'KarimSheikh'
     },
     body: method === 'GET' ? undefined : JSON.stringify(req.body),
@@ -122,6 +171,11 @@ app.use((err, req, res, next) => {
 });
 
 
+/**
+ * Port number on which the server listens.
+ *
+ * @type {number}
+ */
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Proxy listening on port ${PORT}`));
 

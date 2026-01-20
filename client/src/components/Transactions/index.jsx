@@ -1,18 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { getTransactions } from '../../api';
+import { toast } from 'react-toastify';
 import { useSelector, useDispatch } from 'react-redux';
+import { getTransactions, transferToSavingsGoal } from '../../api';
 import { markRoundedUp } from '../../store/roundedUpSlice';
 
 import styles from './index.module.css';
 
+/**
+ * Calculates the amount needed to round up a transaction to the next whole currency unit.
+ * For example, a transaction of £1.23 would round up by £0.77 to £2.00.
+ *
+ * @param {number} amount - The transaction amount in minor units (e.g., pence for GBP)
+ * @returns {number} The round-up amount in major units
+ */
 function roundUp(amount) {
   const val = Math.abs(amount / 100);
   const rounded = Math.ceil(val) - val;
   return rounded === 1 ? 0 : rounded;
 }
 
-
-export default function TransactionList({ accountUid, categoryUid }) {
+/**
+ * Displays a list of transactions with date filtering,
+ * round-up amount calculations, and functionality to transfer rounded-up amounts to a savings goal.
+ *
+ * @param {string} accountUid - The unique identifier of the account
+ * @param {string} categoryUid - The unique identifier of the transaction category
+ * @param {string} savingsGoalUid - The unique identifier of the savings goal for transfers
+ * @returns {JSX.Element} The rendered transaction list component
+ */
+export default function TransactionList({
+  accountUid,
+  categoryUid,
+  savingsGoalUid,
+}) {
   const [from, setFrom] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 7);
@@ -23,44 +43,76 @@ export default function TransactionList({ accountUid, categoryUid }) {
   const [openId, setOpenId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const roundedUpIds = useSelector(state => state.roundedUp.roundedUpTxIds);
+  const roundedUpIds = useSelector((state) => state.roundedUp.roundedUpTxIds);
   const dispatch = useDispatch();
 
   useEffect(() => {
-
-    const ERROR_MESSAGES_TRANSLATE = {'MIN_TIMESTAMP_MUST_BE_BEFORE_MAX_TIMESTAMP': 'The "from" date must be before the "to" date.'};
+    const ERROR_MESSAGES_TRANSLATE = {
+      MIN_TIMESTAMP_MUST_BE_BEFORE_MAX_TIMESTAMP:
+        'The "from" date must be before the "to" date.',
+    };
     if (accountUid && categoryUid && from && to) {
       const isoFrom = new Date(from).toISOString();
       const isoTo = new Date(to).toISOString();
       getTransactions(accountUid, categoryUid, isoFrom, isoTo)
-        .then((data) =>  {setTransactions(data.feedItems || []); setError('');})
+        .then((data) => {
+          setTransactions(data.feedItems || []);
+          setError('');
+        })
         .catch((e) => {
           let errorMessage = '';
           try {
-           errorMessage = JSON.parse(e.message) ? JSON.parse(e.message).errors[0].message : e.message;
+            errorMessage = JSON.parse(e.message)
+              ? JSON.parse(e.message).errors[0].message
+              : e.message;
+          } catch {
+            errorMessage = e.message;
           }
-          catch {
-             errorMessage = e.message;
-          }
-          setError('Failed to fetch transactions: ' + ERROR_MESSAGES_TRANSLATE[errorMessage] || errorMessage);
+          setError(
+            'Failed to fetch transactions: ' +
+              ERROR_MESSAGES_TRANSLATE[errorMessage] || errorMessage,
+          );
         })
         .finally(() => setLoading(false));
     }
   }, [accountUid, categoryUid, from, to]);
   const roundUpSum = {
     amount: transactions
-    .filter(tx => !roundedUpIds.includes(tx.feedItemUid))
-    .reduce((sum, tx) => sum + roundUp(tx.amount.minorUnits), 0),
-    currency: transactions[0]?.amount.currency || 'GBP'
-  }
+      .filter((tx) => !roundedUpIds.includes(tx.feedItemUid))
+      .reduce((sum, tx) => sum + roundUp(tx.amount.minorUnits), 0),
+    currency: transactions[0]?.amount.currency || 'GBP',
+  };
 
   function handleRoundUp() {
     const newIds = [
       ...roundedUpIds,
-      ...transactions.filter(tx => !roundedUpIds.includes(tx.feedItemUid)).map(tx => tx.feedItemUid)
+      ...transactions
+        .filter((tx) => !roundedUpIds.includes(tx.feedItemUid))
+        .map((tx) => tx.feedItemUid),
     ];
     dispatch(markRoundedUp(newIds));
   }
+
+  const handleTransfer = async () => {
+    if (!savingsGoalUid) {
+      toast.error('No savings goal found. Please create one first.');
+      return;
+    }
+    try {
+      setLoading(true);
+      await transferToSavingsGoal(
+        accountUid,
+        savingsGoalUid,
+        (roundUpSum.amount * 100).toFixed(),
+      );
+      handleRoundUp(); // Mark as rounded up in Redux/localStorage
+      toast.success('Successfully transferred to savings goal!');
+    } catch (e) {
+      toast.error('Failed to transfer to savings goal: ' + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -69,11 +121,19 @@ export default function TransactionList({ accountUid, categoryUid }) {
         <div className={styles.filters}>
           <label>
             From
-            <input type="date" value={from} onChange={e => setFrom(e.target.value)} />
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+            />
           </label>
           <label>
             To
-            <input type="date" value={to} onChange={e => setTo(e.target.value)} />
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+            />
           </label>
         </div>
       </div>
@@ -97,47 +157,74 @@ export default function TransactionList({ accountUid, categoryUid }) {
           </div>
         )}
         {!loading && !error && transactions.length > 0 && (
-          <><ul className={styles.list}>
-          {transactions.map(tx => (
-            <li key={tx.feedItemUid} className={styles.item}>
-              <button
-                className={styles.accordionBtn}
-                onClick={() => setOpenId(openId === tx.feedItemUid ? null : tx.feedItemUid)}
-                aria-label="expand"
-              >
+          <>
+            <ul className={styles.list}>
+              {transactions.map((tx) => (
+                <li key={tx.feedItemUid} className={styles.item}>
+                  <button
+                    className={styles.accordionBtn}
+                    onClick={() =>
+                      setOpenId(
+                        openId === tx.feedItemUid ? null : tx.feedItemUid,
+                      )
+                    }
+                    aria-label="expand"
+                  >
+                    <span>
+                      {tx.counterPartyName ||
+                        tx.reference ||
+                        tx.spendingCategory}{' '}
+                      - {tx.amount.currency}
+                      {(tx.amount.minorUnits / 100).toFixed(2)}
+                      {roundedUpIds.includes(tx.feedItemUid) && (
+                        <span className={styles.roundedUp}>(Rounded Up)</span>
+                      )}
+                    </span>
+                    <span>{openId === tx.feedItemUid ? '▲' : '▼'}</span>
+                  </button>
+                  {openId === tx.feedItemUid && (
+                    <div className={styles.details}>
+                      <div>
+                        <strong>Date:</strong>{' '}
+                        {new Date(tx.transactionTime).toLocaleString()}
+                      </div>
+                      <div>
+                        <strong>Description:</strong> {tx.reference}
+                      </div>
+                      <div>
+                        <strong>Rounded Up Amount:</strong> £
+                        {roundUp(tx.amount.minorUnits).toFixed(2)}
+                      </div>
+                      {roundedUpIds.includes(tx.feedItemUid) && (
+                        <div className={styles.roundedUp}>
+                          This transaction has been rounded up.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <div className={styles.footerRow}>
+              <div className={styles.sum}>
                 <span>
-                  {tx.counterPartyName || tx.reference || tx.spendingCategory} - {tx.amount.currency}{(tx.amount.minorUnits / 100).toFixed(2)}
-                  {roundedUpIds.includes(tx.feedItemUid) && (
-                    <span className={styles.roundedUp}>(Rounded Up)</span>
-                  )}
+                  Total amount available for round up: {roundUpSum.currency}
+                  {roundUpSum.amount.toFixed(2)}
                 </span>
-                <span>{openId === tx.feedItemUid ? '▲' : '▼'}</span>
-              </button>
-              {openId === tx.feedItemUid && (
-                <div className={styles.details}>
-                  <div><strong>Date:</strong> {new Date(tx.transactionTime).toLocaleString()}</div>
-                  <div><strong>Description:</strong> {tx.reference}</div>
-                  <div><strong>Rounded Up Amount:</strong> £{roundUp(tx.amount.minorUnits).toFixed(2)}</div>
-                  {roundedUpIds.includes(tx.feedItemUid) && (
-                    <div className={styles.roundedUp}>This transaction has been rounded up.</div>
-                  )}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-        <div className={styles.footerRow}>
-           <div className={styles.sum}>
-          <span>Total amount available for round up: {roundUpSum.currency}{(roundUpSum.amount).toFixed(2)}</span>
-        </div>
-        {roundUpSum.amount > 0 && (<><button
-          className={styles.roundBtn}
-          onClick={handleRoundUp}
-          disabled={roundUpSum === 0}
-        >
-          Transfer
-        </button></>)}        </div>
-       </>
+              </div>
+              {roundUpSum.amount > 0 && (
+                <>
+                  <button
+                    className={styles.roundBtn}
+                    onClick={handleTransfer}
+                    disabled={roundUpSum === 0}
+                  >
+                    Transfer to Savings Goal
+                  </button>
+                </>
+              )}{' '}
+            </div>
+          </>
         )}
       </div>
     </div>

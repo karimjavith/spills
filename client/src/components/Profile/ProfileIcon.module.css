@@ -1,5 +1,5 @@
 .profile-btn {
-  font-size: 2rem;
+  font-size: 1rem;
   padding: 0.25rem 0.5rem;
   border-radius: 9999px;
   background: #f1f5f9;
@@ -11,7 +11,14 @@
   align-items: center;
   justify-content: center;
   margin-right: 4rem;
+  vertical-align: middle;
 }
 .profile-btn:hover {
   background: #e0e7ef;
+}
+
+p.iconname{
+  font-size: 0.75rem;
+  margin: 0.2rem 0 0 0.2rem;
+  vertical-align: middle;
 }

@@ -51,7 +51,7 @@ describe('Starling Proxy', () => {
         headers: { get: () => 'application/json' },
         json: async () => ({
           error: 'invalid_token',
-          error_description: 'Access token expired'
+          error_description: 'Access token has expired'
         }),
         text: async () => '',
         ok: false,
@@ -114,7 +114,7 @@ describe('Starling Proxy', () => {
         headers: { get: () => 'application/json' },
         json: async () => ({
           error: 'invalid_token',
-          error_description: 'Access token expired'
+          error_description: 'Access token has expired'
         }),
         text: async () => '',
         ok: false,

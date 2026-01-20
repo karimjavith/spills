@@ -50,7 +50,8 @@ Handles OAuth token refresh, CORS, and structured logging.
 ## Usage
 
 - The proxy exposes all Starling API endpoints at `/api/starling/*`.
-- Example: GET http://localhost:4000/api/starling/accounts
+- **Example:**  
+  `GET http://localhost:4000/api/starling/accounts`
 
 ---
 

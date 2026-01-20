@@ -1,0 +1,166 @@
+.iconBtn {
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4rem;
+  vertical-align: middle;
+}
+.iconBtn:hover {
+    background: #e0e7ef;
+}
+span.iconname{
+  font-size: 0.75rem;
+  margin: 0.2rem 0 0 0.2rem;
+  vertical-align: middle;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 41, 59, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modalCard {
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 40px rgba(99,54,224,0.10), 0 1.5px 6px rgba(0,0,0,0.03);
+  padding: 2rem 2.5rem 2rem 2.5rem;
+  min-width: 320px;
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  animation: modalIn 0.18s cubic-bezier(.4,0,.2,1);
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.98);}
+  to   { opacity: 1; transform: translateY(0) scale(1);}
+}
+
+.avatar {
+  font-size: 1.25rem;
+  margin: 0 0 1rem 0;
+  display: block;
+}
+
+.goalName {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.savings {
+  color: #00c3a9;
+  margin-bottom: 8px;
+}
+
+.input {
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.createBtn, .closeBtn {
+  margin-top: 0.5rem;
+  background: #6336e0;
+  color: #fff;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s;
+  box-shadow: 0 1px 4px rgba(99,54,224,0.08);
+  align-self: center;
+}
+.createBtn:disabled {
+  background: #d1d5db;
+  color: #888;
+  cursor: not-allowed;
+}
+.closeBtn {
+  background: #e0e7ef;
+  color: #22223b;
+  margin-top: 1rem;
+}
+.closeBtn:hover {
+  background: #d1d5db;
+}
+.error {
+  color: #b91c1c;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+
+.savingsRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.savingsAmount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6336e0;
+}
+
+.savingsLabel {
+  font-size: 1rem;
+  color: #6c6f7d;
+}
+
+.targetAmount {
+  font-size: 1rem;
+  color: #00c3a9;
+  margin-left: auto;
+}
+
+.progressBarWrapper {
+  margin: 0.5rem 0 1.2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.progressBarBg {
+  width: 100%;
+  height: 14px;
+  background: #ede9fe;
+  border-radius: 7px;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+  box-shadow: 0 1px 4px rgba(99,54,224,0.08);
+}
+
+.progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #6336e0 60%, #00c3a9 100%);
+  border-radius: 7px 0 0 7px;
+  transition: width 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+.progressLabel {
+  font-size: 0.98rem;
+  color: #6c6f7d;
+  text-align: right;
+}

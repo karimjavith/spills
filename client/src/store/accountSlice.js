@@ -1,5 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+/**
+ * To manage the currently selected account information.
+ * The account data is persisted in localStorage to maintain selection across sessions.
+ *
+ * @type {import('@reduxjs/toolkit').Slice}
+ */
 const accountSlice = createSlice({
   name: 'account',
   initialState: {
