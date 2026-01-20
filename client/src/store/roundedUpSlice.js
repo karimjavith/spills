@@ -1,6 +1,12 @@
 
 import { createSlice } from '@reduxjs/toolkit';
 
+/**
+ * To manage the list of transaction IDs that have been rounded up.
+ * The state is persisted in localStorage to maintain across sessions.
+ *
+ * @type {import('@reduxjs/toolkit').Slice}
+ */
 const roundedUpSlice = createSlice({
   name: 'roundedUp',
   initialState: {

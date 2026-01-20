@@ -14,12 +14,12 @@
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
-  @media (min-width: 600px) {
+@media (min-width: 600px) {
   .headerBar {
     padding-left: 2rem;
     padding-right: 2rem;
   }
-  }
+}
 
 .title {
   font-size: 1.7rem;
@@ -27,6 +27,12 @@
   color: #6336e0;
   letter-spacing: -1px;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.rightIcons {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* Adjust for desired spacing */
 }
 
 .body {
