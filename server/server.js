@@ -8,9 +8,9 @@ dotenv.config({ path: process.env.DOTENV_CONFIG_PATH });
 
 
 const app = express();
+app.use(morgan('dev')); // for logging requests and responses
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json());
-app.use(morgan('dev')); // for logging requests and responses
 
 const API_BASE = process.env.STARLING_API_BASE;
 const OAUTH_URL = process.env.STARLING_OAUTH_URL;
@@ -18,9 +18,8 @@ const CLIENT_ID = process.env.STARLING_CLIENT_ID;
 const CLIENT_SECRET = process.env.STARLING_CLIENT_SECRET;
 let accessToken = process.env.STARLING_ACCESS_TOKEN;
 let refreshToken = process.env.STARLING_REFRESH_TOKEN;
-
 async function refreshAccessToken() {
-  const params = new URLSearchParams({
+ const params = new URLSearchParams({
     grant_type: 'refresh_token',
     refresh_token: refreshToken,
     client_id: CLIENT_ID,
@@ -29,12 +28,15 @@ async function refreshAccessToken() {
 
   const res = await fetch(OAUTH_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { 
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
     body: params,
   });
 
-  if (!res.ok) throw new Error('Failed to refresh token');
   const data = await res.json();
+
+  if (!res.ok) throw new Error('Failed to refresh token');
   accessToken = data.access_token;
   refreshToken = data.refresh_token;
   return accessToken;
@@ -66,8 +68,9 @@ async function proxyToStarling(req, res) {
     if (
       errorBody.error === 'invalid_token' &&
       errorBody.error_description &&
-      errorBody.error_description.toLowerCase().includes('expired')
+      errorBody.error_description.toLowerCase() === 'access token has expired'
     ) {
+      console.log('Access token expired, refreshing...');
 
       try {
         await refreshAccessToken();
@@ -111,6 +114,13 @@ app.use((req, res, next) => {
     message: `Route ${req.originalUrl} not found`
   });
 });
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Proxy listening on port ${PORT}`));
