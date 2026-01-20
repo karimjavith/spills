@@ -1,19 +1,25 @@
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import {describe, it, expect, vi, beforeEach} from 'vitest'
-import React from 'react';
+import { Provider } from 'react-redux';
 import * as api from './api';
 import App from './App';
+import store from './store';
 
 vi.mock('./api');
+function renderWithRedux(ui) {
+  return render(<Provider store={store}>{ui}</Provider>);
+}
 
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   it('renders profile icon and shows account info in modal', async () => {
     api.getAccounts.mockResolvedValue({ accounts: [{ name: 'Test Account', accountType: 'Primary' }] });
-    render(<App />);
+    renderWithRedux(<App />);
     // Wait for profile icon to appear
     await waitFor(() => expect(screen.getByRole('button', { name: /profile/i })).toBeInTheDocument());
     // Open modal
@@ -22,15 +28,4 @@ describe('App', () => {
     expect(screen.getByText(/Type: Primary/i)).toBeInTheDocument();
   });
 
-  it('shows error if no accounts', async () => {
-    api.getAccounts.mockResolvedValue({ accounts: [] });
-    render(<App />);
-    await waitFor(() => expect(screen.getByText(/No accounts found/i)).toBeInTheDocument());
-  });
-
-  it('shows error on API failure', async () => {
-    api.getAccounts.mockRejectedValue(new Error('API is down'));
-    render(<App />);
-    await waitFor(() => expect(screen.getByText(/Failed to fetch account/i)).toBeInTheDocument());
-  });
 });

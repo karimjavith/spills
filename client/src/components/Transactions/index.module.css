@@ -1,0 +1,143 @@
+.wrapper {
+  width: 100%;
+  margin: 2.5rem auto 0 auto;
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 12px rgba(99,54,224,0.08), 0 1.5px 6px rgba(0,0,0,0.03);
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.5rem 0.5rem 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  background: #f7f8fa;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #6336e0;
+  letter-spacing: -0.5px;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.listHolder {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0.5rem 1.5rem 0.5rem 1.5rem;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  background: #f7f8fa;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(99,54,224,0.04);
+}
+
+.accordionBtn {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 1rem 1.2rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1.08rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #22223b;
+  transition: background 0.12s;
+}
+
+.accordionBtn:hover {
+  background: #ede9fe;
+}
+
+.roundedUp {
+  color: #00c3a9;
+  margin-left: 12px;
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.details {
+  padding: 0.8rem 1.2rem 0.8rem 1.2rem;
+  background: #ede9fe;
+  border-radius: 0 0 0.75rem 0.75rem;
+  font-size: 0.98rem;
+  color: #444;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem 1rem 1.5rem;
+  border-top: 1px solid #f0f0f0;
+  background: #f7f8fa;
+  min-height: 64px;
+}
+
+.sum {
+  font-weight: 600;
+  color: #6336e0;
+  font-size: 1.1rem;
+  margin-right: 1.5rem;
+}
+
+.roundBtn {
+  background: #6336e0;
+  color: #fff;
+  padding: 0.7rem 2rem;
+  border-radius: 1rem;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1.08rem;
+  transition: background 0.18s;
+  box-shadow: 0 1px 4px rgba(99,54,224,0.08);
+}
+.roundBtn:disabled {
+  background: #d1d5db;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.centeredError {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #b91c1c;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.errorIcon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
