@@ -1,23 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useSelector, useDispatch } from 'react-redux';
-import { getTransactions, transferToSavingsGoal } from '../../api';
 import { markRoundedUp } from '../../store/roundedUpSlice';
+import { getTransactions, transferToSavingsGoal } from '../../api';
+import { getWeekRange, roundUp } from '../../utils';
 
 import styles from './index.module.css';
-
-/**
- * Calculates the amount needed to round up a transaction to the next whole currency unit.
- * For example, a transaction of £1.23 would round up by £0.77 to £2.00.
- *
- * @param {number} amount - The transaction amount in minor units (e.g., pence for GBP)
- * @returns {number} The round-up amount in major units
- */
-function roundUp(amount) {
-  const val = Math.abs(amount / 100);
-  const rounded = Math.ceil(val) - val;
-  return rounded === 1 ? 0 : rounded;
-}
 
 /**
  * Displays a list of transactions with date filtering,
@@ -33,12 +21,11 @@ export default function TransactionList({
   categoryUid,
   savingsGoalUid,
 }) {
-  const [from, setFrom] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 7);
-    return d.toISOString().slice(0, 10);
-  });
-  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const { startOfWeek: initialFrom, endOfWeek: initialTo } = getWeekRange(
+    new Date(),
+  );
+  const [from, setFrom] = useState(initialFrom);
+  const [to, setTo] = useState(initialTo);
   const [transactions, setTransactions] = useState([]);
   const [openId, setOpenId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,6 +37,7 @@ export default function TransactionList({
     const ERROR_MESSAGES_TRANSLATE = {
       MIN_TIMESTAMP_MUST_BE_BEFORE_MAX_TIMESTAMP:
         'The "from" date must be before the "to" date.',
+      'Failed to fetch': 'Server Error',
     };
     if (accountUid && categoryUid && from && to) {
       const isoFrom = new Date(from).toISOString();
@@ -66,7 +54,7 @@ export default function TransactionList({
               ? JSON.parse(e.message).errors[0].message
               : e.message;
           } catch {
-            errorMessage = e.message;
+            errorMessage = e?.message || 'Unknown error';
           }
           setError(
             'Failed to fetch transactions: ' +
@@ -114,25 +102,25 @@ export default function TransactionList({
     }
   };
 
+  // When user picks a date:
+  function handleDateChange(date) {
+    const { startOfWeek, endOfWeek } = getWeekRange(date);
+    setFrom(startOfWeek);
+    setTo(endOfWeek);
+  }
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.headerRow}>
         <span className={styles.title}>Transactions</span>
         <div className={styles.filters}>
           <label>
-            From
+            Pick a date to get transaction for a given week
             <input
               type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-            />
-          </label>
-          <label>
-            To
-            <input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
+              className={styles.datePickerInput}
+              value={from || ''}
+              onChange={(e) => handleDateChange(e.target.value)}
             />
           </label>
         </div>
