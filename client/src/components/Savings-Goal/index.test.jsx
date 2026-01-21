@@ -37,7 +37,7 @@ describe('SavingsGoal', () => {
   });
 
   it('shows modal and existing savings goal', async () => {
-    api.getSavingsGoals.mockResolvedValue({ savingsGoalList: [mockGoal] });
+    api.getSavingsGoals.mockResolvedValue([mockGoal]);
     renderWithRedux(<SavingsGoal />);
     fireEvent.click(screen.getByRole('button', { name: /savings-goal/i }));
     expect(await screen.findByText(/Adventure Fund/)).toBeInTheDocument();

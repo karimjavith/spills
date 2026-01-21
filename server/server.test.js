@@ -14,7 +14,8 @@ const mockNewAccessToken = 'mock-new-access-token';
 
 beforeEach(() => {
   process.env.STARLING_API_BASE = 'https://api-sandbox.starlingbank.com/api/v2';
-  process.env.STARLING_OAUTH_URL = 'https://oauth-sandbox.starlingbank.com/token';
+  process.env.STARLING_OAUTH_URL =
+    'https://oauth-sandbox.starlingbank.com/token';
   process.env.STARLING_CLIENT_ID = 'clientid';
   process.env.STARLING_CLIENT_SECRET = 'clientsecret';
   process.env.STARLING_ACCESS_TOKEN = mockAccessToken;
@@ -38,8 +39,10 @@ describe('Starling Proxy', () => {
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining('/accounts'),
       expect.objectContaining({
-        headers: expect.objectContaining({ Authorization: `Bearer ${mockAccessToken}` }),
-      })
+        headers: expect.objectContaining({
+          Authorization: `Bearer ${mockAccessToken}`,
+        }),
+      }),
     );
   });
 
@@ -51,7 +54,7 @@ describe('Starling Proxy', () => {
         headers: { get: () => 'application/json' },
         json: async () => ({
           error: 'invalid_token',
-          error_description: 'Access token has expired'
+          error_description: 'Access token has expired',
         }),
         text: async () => '',
         ok: false,
@@ -81,7 +84,9 @@ describe('Starling Proxy', () => {
     expect(res.body).toEqual({ accounts: [{ id: '2' }] });
     expect(fetch).toHaveBeenCalledTimes(3);
     expect(fetch.mock.calls[1][0]).toBe(process.env.STARLING_OAUTH_URL);
-    expect(fetch.mock.calls[2][1].headers.Authorization).toBe(`Bearer ${mockNewAccessToken}`);
+    expect(fetch.mock.calls[2][1].headers.Authorization).toBe(
+      `Bearer ${mockNewAccessToken}`,
+    );
   });
 
   it('does NOT refresh token on 401 with invalid token error', async () => {
@@ -91,7 +96,7 @@ describe('Starling Proxy', () => {
       headers: { get: () => 'application/json' },
       json: async () => ({
         error: 'invalid_token',
-        error_description: 'Access token is invalid'
+        error_description: 'Access token is invalid',
       }),
       text: async () => '',
       ok: false,
@@ -101,7 +106,7 @@ describe('Starling Proxy', () => {
     expect(res.status).toBe(401);
     expect(res.body).toEqual({
       error: 'invalid_token',
-      error_description: 'Access token is invalid'
+      error_description: 'Access token is invalid',
     });
     expect(fetch).toHaveBeenCalledTimes(1);
   });
@@ -114,7 +119,7 @@ describe('Starling Proxy', () => {
         headers: { get: () => 'application/json' },
         json: async () => ({
           error: 'invalid_token',
-          error_description: 'Access token has expired'
+          error_description: 'Access token has expired',
         }),
         text: async () => '',
         ok: false,

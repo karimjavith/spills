@@ -1,6 +1,5 @@
-
 import { render, screen, waitFor } from '@testing-library/react';
-import {describe, it, expect, vi} from 'vitest'
+import { describe, it, expect, vi } from 'vitest';
 import { Provider } from 'react-redux';
 import React from 'react';
 import * as api from '../../api';
@@ -13,13 +12,21 @@ function renderWithRedux(ui) {
 }
 
 describe('Profile', () => {
-  it.skip('renders profile icon with account info', async () => {
-    await api.getAccounts.mockResolvedValue({ accounts: [{ name: 'Test Account', accountType: 'Personal', accountUid: '12345' }] });
+  it('renders profile icon with account info', async () => {
+    await api.getAccounts.mockResolvedValue([
+      { name: 'Test Account', accountType: 'Personal', accountUid: '12345' },
+    ]);
     renderWithRedux(<Profile />);
-    await waitFor(() => expect(screen.queryByText(/.../i)).not.toBeInTheDocument());
-    await waitFor(() => expect(screen.getByRole('button', { name: /profile/i })).toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(/.../i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /profile/i }),
+      ).toBeInTheDocument(),
+    );
     screen.getByRole('button', { name: /profile/i }).click();
-    expect(await screen.findByText(/Account Name: Test Account/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Account Name: Test Account/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Type: Personal/i)).toBeInTheDocument();
   });
 

@@ -29,11 +29,11 @@ export default function App() {
       if (account && !account.savingsGoal) {
         try {
           const data = await getSavingsGoals(account.accountUid);
-          if (data.savingsGoalList && data.savingsGoalList.length > 0) {
+          if (data && data.length > 0) {
             dispatch(
               setAccount({
                 ...account,
-                savingsGoal: data.savingsGoalList[0],
+                savingsGoal: data[0],
               }),
             );
           }
