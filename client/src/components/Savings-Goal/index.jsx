@@ -27,7 +27,7 @@ export default function SavingsGoal() {
     setLoading(true);
     setError('');
     try {
-      const data = await getSavingsGoals(account.accountUid);
+      const data = await getSavingsGoals(account?.accountUid || '');
       if (data.savingsGoalList && data.savingsGoalList.length > 0) {
         setGoal(data.savingsGoalList[0]);
         dispatch(
@@ -40,7 +40,7 @@ export default function SavingsGoal() {
         setGoal(null);
       }
     } catch (e) {
-      toast.error(`Failed to fetch savings goal: ${e.message}`);
+      toast.error(`Failed to fetch savings goal: ${e.message || ''}`);
       setError('Failed to fetch savings goal');
     } finally {
       setLoading(false);
