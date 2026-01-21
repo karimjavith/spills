@@ -19,8 +19,8 @@ export default function Profile() {
   useEffect(() => {
     getAccounts()
       .then((data) => {
-        if (data.accounts && data.accounts.length > 0) {
-          dispatch(setAccount(data.accounts[0])); // This is intentional for this testing/demo app. We can fetch multiple accounts later if required.
+        if (data && data.length > 0) {
+          dispatch(setAccount(data[0])); // This is intentional for this testing/demo app. We can fetch multiple accounts later if required.
         } else {
           console.log('No accounts found in response:', data);
         }

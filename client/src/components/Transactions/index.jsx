@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { useSelector, useDispatch } from 'react-redux';
 import { markRoundedUp } from '../../store/roundedUpSlice';
 import { getTransactions, transferToSavingsGoal } from '../../api';
-import { getWeekRange, roundUp } from '../../utils';
+import { getWeekRange } from '../../utils';
 
 import styles from './index.module.css';
 
@@ -26,7 +26,7 @@ export default function TransactionList({
   );
   const [from, setFrom] = useState(initialFrom);
   const [to, setTo] = useState(initialTo);
-  const [transactions, setTransactions] = useState([]);
+  const [feed, setFeed] = useState([]);
   const [openId, setOpenId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -44,14 +44,14 @@ export default function TransactionList({
       const isoTo = new Date(to).toISOString();
       getTransactions(accountUid, categoryUid, isoFrom, isoTo)
         .then((data) => {
-          setTransactions(data.feedItems || []);
+          setFeed(data || []);
           setError('');
         })
         .catch((e) => {
           let errorMessage = '';
           try {
             errorMessage = JSON.parse(e.message)
-              ? JSON.parse(e.message).errors[0].message
+              ? JSON.parse(e.message).message
               : e.message;
           } catch {
             errorMessage = e?.message || 'Unknown error';
@@ -64,17 +64,11 @@ export default function TransactionList({
         .finally(() => setLoading(false));
     }
   }, [accountUid, categoryUid, from, to]);
-  const roundUpSum = {
-    amount: transactions
-      .filter((tx) => !roundedUpIds.includes(tx.feedItemUid))
-      .reduce((sum, tx) => sum + roundUp(tx.amount.minorUnits), 0),
-    currency: transactions[0]?.amount.currency || 'GBP',
-  };
 
   function handleRoundUp() {
     const newIds = [
       ...roundedUpIds,
-      ...transactions
+      ...feed.transactions
         .filter((tx) => !roundedUpIds.includes(tx.feedItemUid))
         .map((tx) => tx.feedItemUid),
     ];
@@ -91,7 +85,8 @@ export default function TransactionList({
       await transferToSavingsGoal(
         accountUid,
         savingsGoalUid,
-        (roundUpSum.amount * 100).toFixed(),
+        feed.totalRoundUp,
+        feed.currency,
       );
       handleRoundUp(); // Mark as rounded up in Redux/localStorage
       toast.success('Successfully transferred to savings goal!');
@@ -138,16 +133,16 @@ export default function TransactionList({
             {error}
           </div>
         )}
-        {!loading && !error && transactions.length === 0 && (
+        {!loading && !error && feed.transactions.length === 0 && (
           <div className={styles.centeredError}>
             <span className={styles.errorIcon}>📭</span>
             No transactions found for this period.
           </div>
         )}
-        {!loading && !error && transactions.length > 0 && (
+        {!loading && !error && feed.transactions.length > 0 && (
           <>
             <ul className={styles.list}>
-              {transactions.map((tx) => (
+              {feed.transactions.map((tx) => (
                 <li key={tx.feedItemUid} className={styles.item}>
                   <button
                     className={styles.accordionBtn}
@@ -180,8 +175,7 @@ export default function TransactionList({
                         <strong>Description:</strong> {tx.reference}
                       </div>
                       <div>
-                        <strong>Rounded Up Amount:</strong> £
-                        {roundUp(tx.amount.minorUnits).toFixed(2)}
+                        <strong>Rounded Up Amount:</strong> £{tx.roundUp}
                       </div>
                       {roundedUpIds.includes(tx.feedItemUid) && (
                         <div className={styles.roundedUp}>
@@ -196,16 +190,18 @@ export default function TransactionList({
             <div className={styles.footerRow}>
               <div className={styles.sum}>
                 <span>
-                  Total amount available for round up: {roundUpSum.currency}
-                  {roundUpSum.amount.toFixed(2)}
+                  Total amount available for round up: {feed.currency}
+                  {feed.totalRoundUp}
                 </span>
               </div>
-              {roundUpSum.amount > 0 && (
+              {feed.transactions.filter(
+                (tx) => !roundedUpIds.includes(tx.feedItemUid),
+              ).length > 0 && (
                 <>
                   <button
                     className={styles.roundBtn}
                     onClick={handleTransfer}
-                    disabled={roundUpSum === 0}
+                    disabled={feed.totalRoundUp === 0}
                   >
                     Transfer to Savings Goal
                   </button>

@@ -28,12 +28,13 @@ export default function SavingsGoal() {
     setError('');
     try {
       const data = await getSavingsGoals(account?.accountUid || '');
-      if (data.savingsGoalList && data.savingsGoalList.length > 0) {
-        setGoal(data.savingsGoalList[0]);
+      console.log('Fetched savings goals:', data);
+      if (data && data.length > 0) {
+        setGoal(data[0]);
         dispatch(
           setAccount({
             ...account,
-            savingsGoal: data.savingsGoalList[0],
+            savingsGoal: data[0],
           }),
         );
       } else {
@@ -55,6 +56,7 @@ export default function SavingsGoal() {
       const data = await createSavingsGoal(
         account.accountUid,
         goalName,
+        'GBP', // Hardcoded currency for simplicity, I would expect this to come from account settings as default currency
         amountMinorUnits,
       );
       setGoal({

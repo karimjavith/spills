@@ -1,6 +1,6 @@
 # Spills – Client
 
-A “round-up” feature for customers using the Starling public developer API.
+A “round-up” feature for customers using the Starling public developer sandbox API.
 
 For example, with spending of **£4.35**, **£5.20**, and **£0.87**, the round-up would be **£1.58**.  
 This amount is then transferred into a savings goal, helping the customer save for future adventures.
@@ -23,14 +23,6 @@ Built with Vite, CSS Modules, and a custom Express backend proxy for secure API 
 
 I chose **not** to use local storage directly for persisting the account IDs, transaction IDs, or savings goals. Instead, I managed these through the Redux store. This approach gives more flexibility and control over state management compared to direct localStorage usage.  
 Component-level states (such as loading, errors, etc.) still reside within the component itself, as I felt it would be overkill to use full-blown Redux (and asyncThunk) for this testing scenario. However, I am happy to consider it if the complexity grows.
-
----
-
-### Why a Backend Proxy for Starling API?
-
-Initially, I tested the APIs via Postman. When I started using the APIs in the app, I encountered CORS errors (which, in hindsight, I should have anticipated).  
-After some research and reviewing Slack chat history, I decided to implement a backend proxy to overcome CORS issues and enable secure data access.  
-**Note:** This proxy approach is only necessary for external apps; internal Starling apps may not face this limitation.
 
 ---
 
@@ -57,11 +49,13 @@ With more time, I can further refine the design and aesthetics as needed—happy
    ```
 
 2. **Configure environment variables:**
-   - Create a `.env` file in the project root:
-     ```
-     VITE_API_BASE_URL=http://localhost:4000/api/starling
-     ```
-   - (Adjust the URL if your backend runs on a different port.)
+   Create a `.env` file in the project root:
+
+   ```
+   VITE_API_BASE_URL=http://localhost:4000
+   ```
+
+   (Adjust the URL if your backend runs on a different port.)
 
 3. **Start the dev server:**
 

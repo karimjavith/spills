@@ -10,20 +10,24 @@ import { ToastContainer } from 'react-toastify';
 
 vi.mock('../../api');
 
-const mockTxs = [
-  {
-    feedItemUid: '1',
-    amount: { minorUnits: 435, currency: 'GBP' },
-    reference: 'Coffee',
-    transactionTime: '2026-01-01T10:00:00Z',
-  },
-  {
-    feedItemUid: '2',
-    amount: { minorUnits: 520, currency: 'GBP' },
-    reference: 'Groceries',
-    transactionTime: '2026-01-02T12:00:00Z',
-  },
-];
+const mockTxs = {
+  currency: 'GBP',
+  totalRoundUp: 1.45,
+  transactions: [
+    {
+      feedItemUid: '1',
+      amount: { minorUnits: 435, currency: 'GBP' },
+      reference: 'Coffee',
+      transactionTime: '2026-01-01T10:00:00Z',
+    },
+    {
+      feedItemUid: '2',
+      amount: { minorUnits: 520, currency: 'GBP' },
+      reference: 'Groceries',
+      transactionTime: '2026-01-02T12:00:00Z',
+    },
+  ],
+};
 
 function renderwithRedux(ui) {
   return render(
@@ -43,7 +47,7 @@ describe('TransactionList', () => {
   });
 
   it('renders transactions and calculates round up', async () => {
-    api.getTransactions.mockResolvedValue({ feedItems: mockTxs });
+    api.getTransactions.mockResolvedValue(mockTxs);
     renderwithRedux(
       <TransactionList
         accountUid="198-0923"
@@ -60,7 +64,7 @@ describe('TransactionList', () => {
   });
 
   it('marks transactions as rounded up after submitting for transfer to savings goal', async () => {
-    api.getTransactions.mockResolvedValue({ feedItems: mockTxs });
+    api.getTransactions.mockResolvedValue(mockTxs);
     renderwithRedux(
       <TransactionList
         accountUid="198-0923"
@@ -86,7 +90,7 @@ describe('TransactionList', () => {
   });
 
   it('shows toast error if transfer fails', async () => {
-    api.getTransactions.mockResolvedValue({ feedItems: mockTxs });
+    api.getTransactions.mockResolvedValue(mockTxs);
     api.transferToSavingsGoal.mockRejectedValue(new Error('API is down'));
 
     renderwithRedux(

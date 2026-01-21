@@ -18,16 +18,3 @@ export function getWeekRange(date) {
     endOfWeek: setSunday.toISOString().slice(0, 10),
   };
 }
-
-/**
- * Calculates the amount needed to round up a transaction to the next whole currency unit.
- * For example, a transaction of £1.23 would round up by £0.77 to £2.00.
- *
- * @param {number} amount - The transaction amount in minor units (e.g., pence for GBP)
- * @returns {number} The round-up amount in major units
- */
-export function roundUp(amount) {
-  const val = Math.abs(amount / 100);
-  const rounded = Math.ceil(val) - val;
-  return rounded === 1 ? 0 : rounded;
-}

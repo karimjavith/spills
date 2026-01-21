@@ -1,21 +1,27 @@
 /**
- * Base URL for the Starling Bank API, pointing to the backend proxy server.
+ * Base URL for the local backend server which connects to Starling Sandbox API
  *
  * @type {string}
  */
-const API_BASE = import.meta.env.VITE_STARLING_API_BASE; // This points to the backend proxy
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 /**
- * Fetches the list of accounts from the Starling API.
+ * Fetches the list of accounts from the local backend server.
  *
  * @async
  * @returns {Promise<Object>} Promise resolving to the accounts data
  * @throws {Error} If the API request fails
  */
 export async function getAccounts() {
-  const res = await fetch(`${API_BASE}/accounts`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const response = await fetch(`${API_BASE}/api/accounts`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch accounts');
+  }
+  return await response.json();
 }
 
 /**
@@ -30,9 +36,14 @@ export async function getAccounts() {
  * @throws {Error} If the API request fails
  */
 export async function getTransactions(accountUid, categoryUid, from, to) {
-  const url = new URL(`${API_BASE}/feed/account/${accountUid}/category/${categoryUid}/transactions-between`);
-  url.searchParams.append('minTransactionTimestamp', from);
-  url.searchParams.append('maxTransactionTimestamp', to);
+  const params = new URLSearchParams({
+    accountUid,
+    categoryUid,
+    from: new Date(from).toISOString().split('T')[0],
+    to: new Date(to).toISOString().split('T')[0],
+  });
+
+  const url = new URL(`${API_BASE}/api/transactions?${params.toString()}`);
   const res = await fetch(url);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -47,9 +58,19 @@ export async function getTransactions(accountUid, categoryUid, from, to) {
  * @throws {Error} If the API request fails
  */
 export async function getSavingsGoals(accountUid) {
-  const res = await fetch(`${API_BASE}/account/${accountUid}/savings-goals`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const params = new URLSearchParams({ accountUid });
+  const response = await fetch(
+    `${API_BASE}/api/savings/goals?${params.toString()}`,
+    {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    },
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch savings goals');
+  }
+  return await response.json();
 }
 
 /**
@@ -62,19 +83,27 @@ export async function getSavingsGoals(accountUid) {
  * @returns {Promise<Object>} Promise resolving to the created savings goal data
  * @throws {Error} If the API request fails
  */
-export async function createSavingsGoal(accountUid, name, amountMinorUnits) {
-  const body = {
-    name,
-    currency: "GBP",
-    target: { currency: "GBP", minorUnits: amountMinorUnits }
-  };
-  const res = await fetch(`${API_BASE}/account/${accountUid}/savings-goals`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+export async function createSavingsGoal(
+  accountUid,
+  name,
+  currency,
+  amountMinorUnits,
+) {
+  const response = await fetch(`${API_BASE}/api/savings/goals`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      accountUid,
+      name,
+      currency,
+      amount: amountMinorUnits,
+    }),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create savings goal');
+  }
+  return await response.json();
 }
 
 /**
@@ -87,15 +116,25 @@ export async function createSavingsGoal(accountUid, name, amountMinorUnits) {
  * @returns {Promise<Object>} Promise resolving to the transfer result data
  * @throws {Error} If the API request fails
  */
-export async function transferToSavingsGoal(accountUid, savingsGoalUid, amountMinorUnits) {
-  const transferUid = crypto.randomUUID();
-  const body = {
-    amount: { currency: "GBP", minorUnits: amountMinorUnits }
-  };
-  const res = await fetch(`${API_BASE}/account/${accountUid}/savings-goals/${savingsGoalUid}/add-money/${transferUid}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+export async function transferToSavingsGoal(
+  accountUid,
+  savingsGoalUid,
+  amount,
+  currency,
+) {
+  const res = await fetch(`${API_BASE}/api/savings/transfer`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+
+    body: JSON.stringify({
+      accountUid,
+      savingsGoalUid,
+      amount,
+      currency,
+    }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
