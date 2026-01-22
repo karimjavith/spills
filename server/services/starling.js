@@ -84,7 +84,6 @@ async function fetchWithTokenRefresh(url, options = {}, retry = true) {
     'User-Agent': 'KarimSheikh',
   };
   const response = await fetch(url, { ...options, headers });
-
   if (response.status === 401 && retry) {
     // Try to parse error body
     let errorBody = {};
@@ -100,6 +99,8 @@ async function fetchWithTokenRefresh(url, options = {}, retry = true) {
       await refreshAccessToken();
       // Retry original request with new token
       return fetchWithTokenRefresh(url, options, false);
+    } else {
+      throw new Error(`${errorBody?.message || 'Unauthorized: Invalid token'}`);
     }
   }
   return response;
