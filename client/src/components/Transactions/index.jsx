@@ -58,7 +58,7 @@ export default function TransactionList({
           }
           setError(
             'Failed to fetch transactions: ' +
-              ERROR_MESSAGES_TRANSLATE[errorMessage] || errorMessage,
+              (ERROR_MESSAGES_TRANSLATE[errorMessage] || errorMessage),
           );
         })
         .finally(() => setLoading(false));
