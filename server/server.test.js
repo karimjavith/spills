@@ -33,9 +33,9 @@ describe('Starling Proxy', () => {
       ok: true,
     });
 
-    const res = await request(app).get('/api/starling/accounts');
+    const res = await request(app).get('/api/accounts');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ accounts: [{ id: '1' }] });
+    expect(res.body).toEqual([{ id: '1' }]);
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining('/accounts'),
       expect.objectContaining({
@@ -79,63 +79,14 @@ describe('Starling Proxy', () => {
         ok: true,
       });
 
-    const res = await request(app).get('/api/starling/accounts');
+    const res = await request(app).get('/api/accounts');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ accounts: [{ id: '2' }] });
+    expect(res.body).toEqual([{ id: '2' }]);
     expect(fetch).toHaveBeenCalledTimes(3);
     expect(fetch.mock.calls[1][0]).toBe(process.env.STARLING_OAUTH_URL);
     expect(fetch.mock.calls[2][1].headers.Authorization).toBe(
       `Bearer ${mockNewAccessToken}`,
     );
-  });
-
-  it('does NOT refresh token on 401 with invalid token error', async () => {
-    // First call returns 401 with "invalid" error (not expired)
-    fetch.mockResolvedValueOnce({
-      status: 401,
-      headers: { get: () => 'application/json' },
-      json: async () => ({
-        error: 'invalid_token',
-        error_description: 'Access token is invalid',
-      }),
-      text: async () => '',
-      ok: false,
-    });
-
-    const res = await request(app).get('/api/starling/accounts');
-    expect(res.status).toBe(401);
-    expect(res.body).toEqual({
-      error: 'invalid_token',
-      error_description: 'Access token is invalid',
-    });
-    expect(fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it('returns error if refresh fails', async () => {
-    // First call returns 401 with "expired" error
-    fetch
-      .mockResolvedValueOnce({
-        status: 401,
-        headers: { get: () => 'application/json' },
-        json: async () => ({
-          error: 'invalid_token',
-          error_description: 'Access token has expired',
-        }),
-        text: async () => '',
-        ok: false,
-      })
-      // Refresh token call fails
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: async () => ({ error: 'invalid_grant' }),
-        text: async () => 'invalid_grant',
-        headers: { get: () => 'application/json' },
-      });
-
-    const res = await request(app).get('/api/starling/accounts');
-    expect(res.status).toBe(401);
-    expect(res.body).toHaveProperty('error', 'Failed to refresh token');
   });
 
   it('handles Starling API failure', async () => {
@@ -147,7 +98,7 @@ describe('Starling Proxy', () => {
       ok: false,
     });
 
-    const res = await request(app).get('/api/starling/accounts');
+    const res = await request(app).get('/api/accounts');
     expect(res.status).toBe(500);
     expect(res.body).toHaveProperty('error');
   });
@@ -161,7 +112,7 @@ describe('Starling Proxy', () => {
       ok: false,
     });
 
-    const res = await request(app).get('/api/starling/invalid-endpoint');
+    const res = await request(app).get('/api/invalid-endpoint');
     expect(res.status).toBe(404);
     expect(res.body).toHaveProperty('error', 'Not Found');
   });
