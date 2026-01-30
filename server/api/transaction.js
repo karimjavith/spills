@@ -1,6 +1,6 @@
 import express from 'express';
 import { fetchTransactions } from '../services/starling.js';
-import { calculateRoundUp } from '../services/roundUp.js';
+import { calculateRoundUp } from '../services/roundup.js';
 
 /**
  * Express router for transaction-related API endpoints.
