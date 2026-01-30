@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Profile from './components/Profile';
 import TransactionList from './components/Transactions';
-import SavingsGoal from './components/Savings-goal';
+import SavingsGoal from './components/Savings-Goal';
 
 import styles from './App.module.css';
 import { ToastContainer } from 'react-toastify';
