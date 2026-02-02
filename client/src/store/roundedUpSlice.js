@@ -1,5 +1,4 @@
-
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 /**
  * To manage the list of transaction IDs that have been rounded up.
@@ -8,11 +7,11 @@ import { createSlice } from '@reduxjs/toolkit';
  * @type {import('@reduxjs/toolkit').Slice}
  */
 const roundedUpSlice = createSlice({
-  name: 'roundedUp',
+  name: "roundedUp",
   initialState: {
     roundedUpTxIds: (() => {
       try {
-        return JSON.parse(localStorage.getItem('roundedUpTxIds') || '[]');
+        return JSON.parse(localStorage.getItem("roundedUpTxIds") || "[]");
       } catch {
         return [];
       }
@@ -21,15 +20,17 @@ const roundedUpSlice = createSlice({
   reducers: {
     markRoundedUp(state, action) {
       // action.payload: array of txIds to add
-      const newIds = Array.from(new Set([...state.roundedUpTxIds, ...action.payload]));
+      const newIds = Array.from(
+        new Set([...state.roundedUpTxIds, ...action.payload]),
+      );
       state.roundedUpTxIds = newIds;
-      localStorage.setItem('roundedUpTxIds', JSON.stringify(newIds));
+      localStorage.setItem("roundedUpTxIds", JSON.stringify(newIds));
     },
     resetRoundedUp(state) {
       state.roundedUpTxIds = [];
-      localStorage.removeItem('roundedUpTxIds');
+      localStorage.removeItem("roundedUpTxIds");
     },
-  }
+  },
 });
 
 export const { markRoundedUp, resetRoundedUp } = roundedUpSlice.actions;

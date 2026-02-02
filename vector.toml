@@ -1,0 +1,102 @@
+[sources.docker]
+type = "docker_logs"
+include_containers = ["spills-server-1"]
+
+[transforms.to_clickhouse_shape]
+type = "remap"
+inputs = ["docker"]
+source = '''
+container = .container_name
+image = .image
+
+# defaults
+kind = "raw"
+level = 30
+msg = .message
+reqId = ""
+
+method = ""
+path = ""
+status = 0
+duration_ms = 0
+trace_id = ""
+span_id = ""
+
+parsed, err = parse_json(.message)
+if err == null {
+  kind = "app"
+  if exists(parsed.req) && exists(parsed.res) { kind = "http" }
+
+  if exists(parsed.level) {
+    lvl, lvl_err = to_int(parsed.level)
+    if lvl_err == null { level = lvl }
+  }
+
+  if exists(parsed.msg) {
+    m, m_err = to_string(parsed.msg)
+    if m_err == null { msg = m }
+  }
+
+  if exists(parsed.reqId) {
+    r, r_err = to_string(parsed.reqId)
+    if r_err == null { reqId = r }
+  }
+
+  if exists(parsed.trace_id){
+    t, t_err =  to_string(parsed.trace_id)
+    if t_err == null { trace_id = t }
+  }
+
+  if exists(parsed.span_id){
+    s, s_err =  to_string(parsed.span_id)
+    if s_err == null { span_id = s }
+  }
+
+  if exists(parsed.req.method) {
+    mm, mm_err = to_string(parsed.req.method)
+    if mm_err == null { method = mm }
+  }
+
+  if exists(parsed.req.url) {
+    u, u_err = to_string(parsed.req.url)
+    if u_err == null { path = split(u, "?")[0] }
+  }
+
+  if exists(parsed.res.statusCode) {
+    s, s_err = to_int(parsed.res.statusCode)
+    if s_err == null { status = s }
+  }
+
+  if exists(parsed.responseTime) {
+    d, d_err = to_int(parsed.responseTime)
+    if d_err == null { duration_ms = d }
+  }
+}
+
+. = {
+  "kind": kind,
+  "level": level,
+  "msg": msg,
+  "reqId": reqId,
+  "container": container,
+  "image": image,
+  "method": method,
+  "path": path,
+  "status": status,
+  "duration_ms": duration_ms,
+  "trace_id": trace_id,
+  "span_id": span_id
+}
+'''
+
+[sinks.clickhouse]
+type = "clickhouse"
+inputs = ["to_clickhouse_shape"]
+endpoint = "http://clickhouse:8123"
+database = "observability"
+table = "logs"
+compression = "gzip"
+
+auth.strategy = "basic"
+auth.user = "obs"
+auth.password = "obs_pass"

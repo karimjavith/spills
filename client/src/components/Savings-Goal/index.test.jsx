@@ -12,14 +12,15 @@ vi.mock('../../api');
 const mockGoal = {
   name: 'Adventure Fund',
   savingsGoalUid: 'goal-123',
-  totalSaved: { minorUnits: 12345, currency: 'GBP' },
-  target: { minorUnits: 50000, currency: 'GBP' },
+  totalSaved: 12345,
+  target: 50000,
+  currency: 'GBP',
 };
 
 function renderWithRedux(ui) {
   store.dispatch({
     type: 'account/setAccount',
-    payload: { accountUid: '198-200', name: 'Test Account' },
+    payload: { id: '198-200', name: 'Test Account', type: 'Primary' },
   });
   return render(
     <Provider store={store}>
@@ -43,7 +44,7 @@ describe('SavingsGoal', () => {
     expect(await screen.findByText(/Adventure Fund/)).toBeInTheDocument();
     expect(screen.getByText(/123.45/)).toBeInTheDocument();
     expect(screen.getByText(/saved/)).toBeInTheDocument();
-    expect(screen.getByText(/24.7% of target/)).toBeInTheDocument();
+    expect(screen.getByText(/24.69% of target/)).toBeInTheDocument();
   });
 
   it('shows create goal UI if no goal exists and creates goal with amount', async () => {

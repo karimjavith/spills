@@ -7,11 +7,11 @@ describe('API client', () => {
   it('returns accounts on success', async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ accounts: [{ accountUid: '199-201' }] }),
+      json: async () => ({ accounts: [{ id: '199-201' }] }),
       text: async () => '',
     });
     const data = await api.getAccounts();
-    expect(data).toEqual({ accounts: [{ accountUid: '199-201' }] });
+    expect(data).toEqual({ accounts: [{ id: '199-201' }] });
   });
 
   it('returns error on account fetch failure', async () => {

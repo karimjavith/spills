@@ -1,8 +1,8 @@
 # Spills – Monorepo
 
-A full-stack implementation of a "round-up" feature for Starling Bank customers.
+A full-stack implementation of a "round-up" feature for Bank customers.
 
-This project consists of a React client and a secure Express backend proxy for the Starling public developer API.
+This project consists of a React client and a secure Express backend proxy for the bank public developer API.
 
 ## Project Structure
 
@@ -77,7 +77,3 @@ npm run test:proxy  # server
 Never expose your Starling API credentials or tokens to the frontend.
 All secrets are stored in  .env  files and used only on the backend.
 OAuth tokens are refreshed and managed securely by the backend.
-
-## Author
-
-Karim Sheikh (karimjavith@gmail.com)

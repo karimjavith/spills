@@ -6,7 +6,7 @@
   border: none;
   cursor: pointer;
   transition: background 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,9 +14,9 @@
   vertical-align: middle;
 }
 .iconBtn:hover {
-    background: #e0e7ef;
+  background: #e0e7ef;
 }
-span.iconname{
+span.iconname {
   font-size: 0.75rem;
   margin: 0.2rem 0 0 0.2rem;
   vertical-align: middle;
@@ -35,7 +35,9 @@ span.iconname{
 .modalCard {
   background: #fff;
   border-radius: 1.25rem;
-  box-shadow: 0 8px 40px rgba(99,54,224,0.10), 0 1.5px 6px rgba(0,0,0,0.03);
+  box-shadow:
+    0 8px 40px rgba(99, 54, 224, 0.1),
+    0 1.5px 6px rgba(0, 0, 0, 0.03);
   padding: 2rem 2.5rem 2rem 2.5rem;
   min-width: 320px;
   max-width: 380px;
@@ -43,13 +45,19 @@ span.iconname{
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  animation: modalIn 0.18s cubic-bezier(.4,0,.2,1);
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  animation: modalIn 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(40px) scale(0.98);}
-  to   { opacity: 1; transform: translateY(0) scale(1);}
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .avatar {
@@ -77,7 +85,8 @@ span.iconname{
   font-size: 1rem;
 }
 
-.createBtn, .closeBtn {
+.createBtn,
+.closeBtn {
   margin-top: 0.5rem;
   background: #6336e0;
   color: #fff;
@@ -88,7 +97,7 @@ span.iconname{
   font-weight: 500;
   cursor: pointer;
   transition: background 0.18s;
-  box-shadow: 0 1px 4px rgba(99,54,224,0.08);
+  box-shadow: 0 1px 4px rgba(99, 54, 224, 0.08);
   align-self: center;
 }
 .createBtn:disabled {
@@ -109,7 +118,6 @@ span.iconname{
   margin-bottom: 8px;
   text-align: center;
 }
-
 
 .savingsRow {
   display: flex;
@@ -149,14 +157,14 @@ span.iconname{
   border-radius: 7px;
   overflow: hidden;
   margin-bottom: 0.3rem;
-  box-shadow: 0 1px 4px rgba(99,54,224,0.08);
+  box-shadow: 0 1px 4px rgba(99, 54, 224, 0.08);
 }
 
 .progressBarFill {
   height: 100%;
   background: linear-gradient(90deg, #6336e0 60%, #00c3a9 100%);
   border-radius: 7px 0 0 7px;
-  transition: width 0.3s cubic-bezier(.4,0,.2,1);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .progressLabel {

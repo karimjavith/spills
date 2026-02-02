@@ -14,7 +14,7 @@ function renderWithRedux(ui) {
 describe('Profile', () => {
   it('renders profile icon with account info', async () => {
     await api.getAccounts.mockResolvedValue([
-      { name: 'Test Account', accountType: 'Personal', accountUid: '12345' },
+      { name: 'Test Account', type: 'Personal', id: '12345' },
     ]);
     renderWithRedux(<Profile />);
     await waitFor(() => expect(screen.queryByText(/.../i)).toBeInTheDocument());

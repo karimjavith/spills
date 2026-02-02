@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateRoundUp } from './roundUp.js';
+import { calculateRoundUp } from './roundup.js';
 
 describe('calculateRoundUp', () => {
   it('should round up to the nearest pound', () => {

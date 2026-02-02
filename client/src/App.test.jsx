@@ -11,9 +11,9 @@ function renderWithRedux(ui) {
   store.dispatch({
     type: 'account/setAccount',
     payload: {
-      accountUid: '198-200',
+      id: '198-200',
       name: 'Test Account',
-      accountType: 'Primary',
+      type: 'Primary',
     },
   });
   return render(<Provider store={store}>{ui}</Provider>);

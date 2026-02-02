@@ -27,7 +27,7 @@ export default function SavingsGoal() {
     setLoading(true);
     setError('');
     try {
-      const data = await getSavingsGoals(account?.accountUid || '');
+      const data = await getSavingsGoals(account?.id || '');
       console.log('Fetched savings goals:', data);
       if (data && data.length > 0) {
         setGoal(data[0]);
@@ -54,7 +54,7 @@ export default function SavingsGoal() {
     try {
       const amountMinorUnits = Math.round(Number(goalAmount) * 100);
       const data = await createSavingsGoal(
-        account.accountUid,
+        account.id,
         goalName,
         'GBP', // Hardcoded currency for simplicity, I would expect this to come from account settings as default currency
         amountMinorUnits,
@@ -144,12 +144,12 @@ export default function SavingsGoal() {
                 <div className={styles.goalName}>{goal.name}</div>
                 <div className={styles.savingsRow}>
                   <span className={styles.savingsAmount}>
-                    {((goal.totalSaved?.minorUnits || 0) / 100).toFixed(2)}
+                    {((goal.totalSaved || 0) / 100).toFixed(2)}
                   </span>
                   <span className={styles.savingsLabel}>saved</span>
                   <span className={styles.targetAmount}>
-                    {goal.target?.minorUnits
-                      ? `of ${goal.target.currency} ${(goal.target.minorUnits / 100).toFixed(2)} target`
+                    {goal.target
+                      ? `of ${goal.currency} ${(goal.target / 100).toFixed(2)} target`
                       : 'No target set'}
                   </span>
                 </div>
@@ -160,21 +160,17 @@ export default function SavingsGoal() {
                       style={{
                         width: `${Math.min(
                           100,
-                          ((goal.totalSaved?.minorUnits || 0) /
-                            (goal.target?.minorUnits || 1)) *
-                            100,
+                          ((goal.totalSaved || 0) / (goal.target || 1)) * 100,
                         )}%`,
                       }}
                     />
                   </div>
                   <span className={styles.progressLabel}>
-                    {goal.target?.minorUnits
+                    {goal.target
                       ? `${Math.min(
                           100,
-                          ((goal.totalSaved?.minorUnits || 0) /
-                            (goal.target?.minorUnits || 1)) *
-                            100,
-                        ).toFixed(1)}% of target`
+                          ((goal.totalSaved || 0) / (goal.target || 1)) * 100,
+                        ).toFixed(2)}% of target`
                       : ''}
                   </span>
                 </div>

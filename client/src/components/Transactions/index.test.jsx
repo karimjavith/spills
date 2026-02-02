@@ -15,15 +15,15 @@ const mockTxs = {
   totalRoundUp: 1.45,
   transactions: [
     {
-      feedItemUid: '1',
-      amount: { minorUnits: 435, currency: 'GBP' },
-      reference: 'Coffee',
+      transactionId: '1',
+      transactionAmount: { minorUnits: 435, currency: 'GBP' },
+      transactionReference: 'Coffee',
       transactionTime: '2026-01-01T10:00:00Z',
     },
     {
-      feedItemUid: '2',
-      amount: { minorUnits: 520, currency: 'GBP' },
-      reference: 'Groceries',
+      transactionId: '2',
+      transactionAmount: { minorUnits: 520, currency: 'GBP' },
+      transactionReference: 'Groceries',
       transactionTime: '2026-01-02T12:00:00Z',
     },
   ],
