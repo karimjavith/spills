@@ -69,8 +69,8 @@ export default function TransactionList({
     const newIds = [
       ...roundedUpIds,
       ...feed.transactions
-        .filter((tx) => !roundedUpIds.includes(tx.feedItemUid))
-        .map((tx) => tx.feedItemUid),
+        .filter((tx) => !roundedUpIds.includes(tx.transactionId))
+        .map((tx) => tx.transactionId),
     ];
     dispatch(markRoundedUp(newIds));
   }
@@ -143,74 +143,124 @@ export default function TransactionList({
           <>
             <ul className={styles.list}>
               {feed.transactions.map((tx) => (
-                <li key={tx.feedItemUid} className={styles.item}>
+                <li key={tx.transactionId} className={styles.item}>
                   <button
                     className={styles.accordionBtn}
                     onClick={() =>
                       setOpenId(
-                        openId === tx.feedItemUid ? null : tx.feedItemUid,
+                        openId === tx.transactionId ? null : tx.transactionId,
                       )
                     }
                     aria-label="expand"
                   >
-                    <span>
-                      {tx.counterPartyName ||
-                        tx.reference ||
-                        tx.spendingCategory}{' '}
-                      - {tx.amount.currency}
-                      {(tx.amount.minorUnits / 100).toFixed(2)}
-                      {roundedUpIds.includes(tx.feedItemUid) && (
-                        <span className={styles.roundedUp}>(Rounded Up)</span>
-                      )}
+                    <span className={styles.itemDetailsMeta}>
+                      {new Date(tx.transactionTime).toLocaleDateString()}
                     </span>
-                    <span>{openId === tx.feedItemUid ? '▲' : '▼'}</span>
+                    <span className={styles.itemDetailsMeta}>
+                      <strong>
+                        {tx.transactionReference ||
+                          tx.transactionCounterPartyName ||
+                          tx.transactionSpendingCategory}{' '}
+                      </strong>
+                    </span>
+                    <span className={styles.itemDetailsMeta}>
+                      <label>
+                        {tx.transactionAmount.currency}{' '}
+                        {(tx.transactionAmount.minorUnits / 100).toFixed(2)}
+                      </label>
+                      <label>{openId === tx.transactionId ? '▲' : '▶'}</label>
+                    </span>
                   </button>
-                  {openId === tx.feedItemUid && (
+                  {openId === tx.transactionId && (
                     <div className={styles.details}>
-                      <div>
-                        <strong>Date:</strong>{' '}
-                        {new Date(tx.transactionTime).toLocaleString()}
-                      </div>
-                      <div>
-                        <strong>Description:</strong> {tx.reference}
-                      </div>
-                      <div>
-                        <strong>Rounded Up Amount:</strong> £{tx.roundUp}
-                      </div>
-                      {roundedUpIds.includes(tx.feedItemUid) && (
-                        <div className={styles.roundedUp}>
-                          This transaction has been rounded up.
+                      <div className={styles.left}>
+                        <div>
+                          <strong>DateTime</strong>{' '}
+                          <label>
+                            {new Date(tx.transactionTime).toLocaleString()}
+                          </label>
                         </div>
-                      )}
+                        <div>
+                          <strong>Category</strong>
+                          <label>{tx.transactionSpendingCategory}</label>
+                        </div>
+                        <div>
+                          <strong>Source </strong>
+                          <label>{tx.transactionSource}</label>
+                        </div>
+                      </div>
+                      <div className={styles.right}>
+                        <div>
+                          <strong>Status </strong>
+                          <label className={styles[tx.transactionStatus]}>
+                            {tx.transactionStatus}
+                          </label>
+                        </div>
+                        <div>
+                          <strong>Type </strong>
+                          <label>
+                            {tx.transactionDirection === 'IN'
+                              ? 'Credit'
+                              : 'Debit'}
+                            {'  '}
+                            {tx.transactionDirection === 'IN' ? (
+                              <span className={styles.credit}>↙</span>
+                            ) : (
+                              <span className={styles.debit}>↗</span>
+                            )}
+                          </label>
+                        </div>
+                        {tx.roundUp > 0 && (
+                          <div>
+                            {(roundedUpIds.includes(tx.transactionId) && (
+                              <strong className={styles.roundedUp}>
+                                Rounded Upto
+                              </strong>
+                            )) || <strong>Available to round up</strong>}
+                            <label>
+                              {tx.transactionAmount.currency}
+                              {'  '}
+                              {(roundedUpIds.includes(tx.transactionId) &&
+                                (
+                                  tx.roundUp +
+                                  tx.transactionAmount.minorUnits / 100
+                                ).toFixed(2)) ||
+                                tx.roundUp}
+                            </label>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </li>
               ))}
             </ul>
-            <div className={styles.footerRow}>
-              <div className={styles.sum}>
-                <span>
-                  Total amount available for round up: {feed.currency}
-                  {feed.totalRoundUp}
-                </span>
-              </div>
-              {feed.transactions.filter(
-                (tx) => !roundedUpIds.includes(tx.feedItemUid),
-              ).length > 0 && (
-                <>
-                  <button
-                    className={styles.roundBtn}
-                    onClick={handleTransfer}
-                    disabled={feed.totalRoundUp === 0}
-                  >
-                    Transfer to Savings Goal
-                  </button>
-                </>
-              )}{' '}
-            </div>
           </>
         )}
       </div>
+      {!loading && !error && feed.totalRoundUp > 0 && (
+        <div className={styles.footerRow}>
+          <div className={styles.sum}>
+            <span>
+              Total amount available for round up: {feed.currency}
+              {feed.totalRoundUp}
+            </span>
+          </div>
+          {feed.transactions.filter(
+            (tx) => !roundedUpIds.includes(tx.transactionId),
+          ).length > 0 && (
+            <>
+              <button
+                className={styles.roundBtn}
+                onClick={handleTransfer}
+                disabled={feed.totalRoundUp === 0}
+              >
+                Transfer to Savings Goal
+              </button>
+            </>
+          )}{' '}
+        </div>
+      )}
     </div>
   );
 }

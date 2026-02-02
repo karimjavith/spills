@@ -38,7 +38,7 @@ export default function Profile() {
     <>
       <ProfileIcon
         accountName={account?.name || 'Unknown'}
-        accountType={account?.accountType}
+        accountType={account?.type || 'N/A'}
       />
       {error && <div className="error">⚠️</div>}
     </>

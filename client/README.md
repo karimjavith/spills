@@ -1,6 +1,6 @@
 # Spills – Client
 
-A “round-up” feature for customers using the Starling public developer sandbox API.
+A “round-up” feature for customers using the bank public developer sandbox API.
 
 For example, with spending of **£4.35**, **£5.20**, and **£0.87**, the round-up would be **£1.58**.  
 This amount is then transferred into a savings goal, helping the customer save for future adventures.
@@ -11,7 +11,7 @@ Built with Vite, CSS Modules, and a custom Express backend proxy for secure API 
 
 ## Features
 
-- Top header bar with Starling branding and profile modal
+- Top header bar with branding and profile modal
 - Fetches account info via a secure backend proxy
 - Preferences displayed as toggle switches (hard disabled for now, can be made dynamic for a given backend API)
 
@@ -75,18 +75,14 @@ With more time, I can further refine the design and aesthetics as needed—happy
 - **React + Vite**
 - **CSS Modules**
 - **React Testing Library & Vitest**
-- **Starling API (via backend proxy)**
+- **bank API (via backend proxy)**
 
 ---
 
 ## Notes
 
-- **Do not call the Starling API directly from the frontend.**  
+- **Do not call the bank API directly from the frontend.**  
   All requests go through the backend proxy for security and CORS compliance.
-- For Starling API credentials, see the server README.
+- For bank API credentials, see the server README.
 
 ---
-
-## Author
-
-Karim Sheikh ([karimjavith@gmail.com](mailto:karimjavith@gmail.com))

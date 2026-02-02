@@ -11,7 +11,9 @@
 .modalCard {
   background: #fff;
   border-radius: 1.25rem;
-  box-shadow: 0 8px 40px rgba(99,54,224,0.10), 0 1.5px 6px rgba(0,0,0,0.03);
+  box-shadow:
+    0 8px 40px rgba(99, 54, 224, 0.1),
+    0 1.5px 6px rgba(0, 0, 0, 0.03);
   padding: 2rem 2.5rem 2rem 2.5rem;
   min-width: 320px;
   max-width: 380px;
@@ -19,13 +21,19 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  animation: modalIn 0.18s cubic-bezier(.4,0,.2,1);
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  animation: modalIn 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(40px) scale(0.98);}
-  to   { opacity: 1; transform: translateY(0) scale(1);}
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .headerRow {
@@ -56,7 +64,6 @@
   font-size: 1.25rem;
   margin: 0 0 1.2rem 0;
   display: block;
-
 }
 
 .prefList {
@@ -87,13 +94,12 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.18s;
-  box-shadow: 0 1px 4px rgba(99,54,224,0.08);
+  box-shadow: 0 1px 4px rgba(99, 54, 224, 0.08);
   align-self: center;
 }
 .closeBtn:hover {
   background: #00c3a9;
 }
-
 
 .toggle-switch {
   position: relative;
@@ -113,7 +119,10 @@
 .toggle-slider {
   position: absolute;
   cursor: not-allowed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: #d1d5db;
   border-radius: 20px;
   transition: background 0.2s;
@@ -122,7 +131,6 @@
 .toggle-switch input:checked + .toggle-slider {
   background-color: #6336e0;
 }
-
 
 .toggle-slider:before {
   position: absolute;
@@ -139,4 +147,3 @@
 .toggle-switch input:checked + .toggle-slider:before {
   transform: translateX(18px);
 }
-

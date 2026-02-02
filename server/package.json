@@ -1,24 +1,53 @@
 {
   "name": "starling-proxy",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "dev:proxy": "nodemon server.js",
-    "start:proxy": "node server.js",
+    "typecheck": "tsc --noEmit",
+    "dev:ts": "tsx watch server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start:ts": "tsx server.ts",
+    "dev:proxy": "concurrently -k -n PROXY,TSC,ESLINT,PRETTIER -c green,cyan,yellow,magenta \"npm:dev:proxy:run\" \"npm:dev:proxy:typecheck\" \"npm:dev:proxy:lint:watch\" \"npm:dev:proxy:prettier:watch\"",
+    "dev:proxy:run": "nodemon --watch . --ext ts,json --exec tsx server.ts",
+    "dev:proxy:typecheck": "tsc -p tsconfig.json --noEmit --watch --preserveWatchOutput",
+    "dev:proxy:lint": "eslint .",
+    "dev:proxy:lint:watch": "nodemon --watch . --ext ts,tsx,js,json --ignore dist --ignore node_modules --exec \"npm run -s dev:proxy:lint\"",
+    "dev:proxy:prettier": "prettier --check .",
+    "dev:proxy:prettier:watch": "nodemon --watch . --ext ts,tsx,js,json,md --ignore dist --ignore node_modules --exec \"npm run -s dev:proxy:prettier\"",
+    "start:proxy": "node dist/server.js",
     "test:proxy": "DOTENV_CONFIG_PATH=.env.test vitest"
   },
   "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.69.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.211.0",
+    "@opentelemetry/sdk-node": "^0.211.0",
     "axios": "^1.13.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "morgan": "^1.10.1",
-    "node-fetch": "^3.3.2"
+    "pino": "^10.3.0",
+    "pino-http": "^11.0.0",
+    "undici": "^7.19.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.10",
+    "@types/supertest": "^6.0.3",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.2",
+    "eslint-plugin-import": "^2.32.0",
+    "globals": "^17.2.0",
     "jest": "^30.2.0",
     "nodemon": "^3.1.11",
+    "prettier": "^3.8.1",
     "supertest": "^7.2.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0",
     "vitest": "^4.0.17"
   }
 }

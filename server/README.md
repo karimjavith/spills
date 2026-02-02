@@ -1,13 +1,13 @@
 # Spills – Server (Express Proxy)
 
-A secure Node.js/Express proxy for Starling Bank's public API.  
+A secure Node.js/Express proxy for a Bank's public API.  
 Handles OAuth token refresh, CORS, and structured logging.
 
 ---
 
 ## Features
 
-- Proxies all Starling API requests from the frontend
+- Proxies all bank API requests from the frontend
 - Handles access token refresh using the refresh token (automatic retry on expiry)
 - Endpoints for:
   - Listing accounts (`GET /api/accounts`)
@@ -51,7 +51,7 @@ Handles OAuth token refresh, CORS, and structured logging.
 
 ### Usage
 
-- The proxy exposes all Starling API endpoints at  /api/starling/\* .
+- The proxy exposes all bank API endpoints at  /api/starling/\* .
 - Custom endpoints:
   - GET /api/accounts  – List accounts
   - GET /api/savings/goals  – List savings goals
@@ -65,7 +65,7 @@ Handles OAuth token refresh, CORS, and structured logging.
 
 ### Security
 
-Never expose your Starling API credentials or tokens to the frontend.
+Never expose your bank API credentials or tokens to the frontend.
 All secrets are stored in  .env  and used only on the backend.
 OAuth tokens are refreshed and managed securely by the backend.
 
@@ -76,7 +76,3 @@ OAuth tokens are refreshed and managed securely by the backend.
 All requests and errors are logged in structured JSON format to the console.
 
 ---
-
-### Author
-
-Karim Sheikh (karimjavith@gmail.com)

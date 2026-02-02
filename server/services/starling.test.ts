@@ -5,55 +5,51 @@ import {
   getSavingsGoals,
   transferToSavingsGoal,
 } from './starling.js';
+import { jsonResponse } from '../helpers/index.js';
 
-vi.mock('node-fetch', () => ({
-  default: vi.fn(),
-}));
-
-import fetch from 'node-fetch';
+const fetchMock = vi.fn();
+globalThis.fetch = fetchMock as unknown as typeof fetch;
 
 describe('getAccounts', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => fetchMock.mockReset());
 
   it('should return accounts list', async () => {
-    fetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        accounts: [{ accountUid: '190-200', name: 'Joe Doe' }],
-      }),
-    });
-    const result = await getAccounts('token');
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          accounts: [{ accountUid: '190-200', name: 'Joe Doe' }],
+        },
+        200,
+      ),
+    );
+    const result = await getAccounts();
     expect(result).toEqual([{ accountUid: '190-200', name: 'Joe Doe' }]);
   });
 
   it('should throw on Starling API error', async () => {
-    fetch.mockResolvedValue({
-      ok: false,
-      status: 500,
-      text: async () => 'error',
-    });
+    fetchMock.mockResolvedValue(jsonResponse({ error: 'error' }, 500));
     await expect(getAccounts()).rejects.toThrow(/Failed to get accounts/);
   });
 });
 
 describe('getSavingsGoals', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => fetchMock.mockReset());
 
   it('should return savings goals list', async () => {
-    fetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ savingsGoalList: [{ name: 'Holiday' }] }),
-    });
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          savingsGoalList: [{ name: 'Holiday' }],
+        },
+        200,
+      ),
+    );
     const result = await getSavingsGoals('190-200');
     expect(result).toEqual([{ name: 'Holiday' }]);
   });
 
   it('should throw on Starling API error', async () => {
-    fetch.mockResolvedValue({
-      ok: false,
-      status: 500,
-      text: async () => 'error',
-    });
+    fetchMock.mockResolvedValue(jsonResponse({ error: 'error' }, 500));
     await expect(getSavingsGoals('190-200')).rejects.toThrow(
       /Failed to get savings goals/,
     );
@@ -61,60 +57,59 @@ describe('getSavingsGoals', () => {
 });
 
 describe('createSavingsGoal', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => fetchMock.mockReset());
 
   it('should create a savings goal', async () => {
-    fetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ savingsGoalUid: 'goal1' }),
-    });
-    const result = await createSavingsGoal('190-200', 'Holiday', 'GBP');
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          savingsGoalUid: 'goal1',
+        },
+        200,
+      ),
+    );
+    const result = await createSavingsGoal('190-200', 'adventure', 'GBP', 101);
     expect(result).toEqual({ savingsGoalUid: 'goal1' });
   });
 
   it('should throw on Starling API error', async () => {
-    fetch.mockResolvedValue({
-      ok: false,
-      status: 500,
-      text: async () => 'error',
-    });
+    fetchMock.mockResolvedValue(jsonResponse({ error: 'error' }, 500));
     await expect(
-      createSavingsGoal('190-200', 'Holiday', 'GBP'),
+      createSavingsGoal('190-200', 'adventure', 'GBP', 101),
     ).rejects.toThrow(/Failed to create savings goal/);
   });
 });
 
 describe('transferToSavingsGoal', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    fetchMock.mockReset();
   });
 
   it('should call Starling API and return response', async () => {
-    fetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ success: true }),
-    });
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          success: true,
+        },
+        200,
+      ),
+    );
 
     const result = await transferToSavingsGoal(
       '190-200',
       '190-200-201',
       158,
       'GBP',
-      'token',
     );
-    expect(fetch).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalled();
     expect(result).toEqual({ success: true });
   });
 
   it('should throw on Starling API error', async () => {
-    fetch.mockResolvedValue({
-      ok: false,
-      status: 500,
-      json: async () => 'error',
-    });
+    fetchMock.mockResolvedValue(jsonResponse({ error: 'error' }, 500));
 
     await expect(
-      transferToSavingsGoal('190-200', '190-200-201', 158, 'GBP', 'token'),
+      transferToSavingsGoal('190-200', '190-200-201', 158, 'GBP'),
     ).rejects.toThrow(/Failed to transfer to savings goal/);
   });
 });

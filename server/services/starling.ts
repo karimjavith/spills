@@ -1,38 +1,56 @@
-import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import { log } from '../middleware/observability/logger.js';
+import type {
+  StarlingAccountsResponse,
+  StarlingFeedResponse,
+  StarlingSavingsGoalsResponse,
+  StarlingCreateSavingsGoalResponse,
+  StarlingTransferResponse,
+  StarlingTokenResponse,
+  StarlingAccount,
+  StarlingFeedItem,
+  StarlingSavingsGoal,
+} from '../types/startling.type.js';
+import {
+  getErrorMessage,
+  getStringField,
+  isRecord,
+  requiredENV,
+  safeJson,
+} from '../helpers/index.js';
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH });
 
 /**
  * Base URL for the Starling Bank API
  * @type {string}
  */
-const API_BASE = process.env.STARLING_API_BASE;
+const API_BASE: string = requiredENV('STARLING_API_BASE');
 /**
  * OAuth token endpoint URL for Starling Bank authentication
  * @type {string}
  */
-const OAUTH_URL = process.env.STARLING_OAUTH_URL;
+const OAUTH_URL: string = requiredENV('STARLING_OAUTH_URL');
 /**
  * Client ID for Starling Bank OAuth application
  * @type {string}
  */
-const CLIENT_ID = process.env.STARLING_CLIENT_ID;
+const CLIENT_ID: string = requiredENV('STARLING_CLIENT_ID');
 /**
  * Client secret for Starling Bank OAuth application
  * @type {string}
  */
-const CLIENT_SECRET = process.env.STARLING_CLIENT_SECRET;
+const CLIENT_SECRET: string = requiredENV('STARLING_CLIENT_SECRET');
 /**
  * Current access token for Starling Bank API authentication
  * Automatically refreshed when expired
  * @type {string}
  */
-let accessToken = process.env.STARLING_ACCESS_TOKEN;
+let accessToken: string | undefined = requiredENV('STARLING_ACCESS_TOKEN');
 /**
  * Refresh token used to obtain new access tokens when they expire
  * @type {string}
  */
-let refreshToken = process.env.STARLING_REFRESH_TOKEN;
+let refreshToken: string | undefined = requiredENV('STARLING_REFRESH_TOKEN');
 
 /**
  * Refreshes the Starling Bank access token using the refresh token.
@@ -44,10 +62,10 @@ let refreshToken = process.env.STARLING_REFRESH_TOKEN;
  * @returns {Promise<string>} The new access token
  * @throws {Error} If the token refresh request fails
  */
-export async function refreshAccessToken() {
+export async function refreshAccessToken(): Promise<string> {
   const params = new URLSearchParams({
     grant_type: 'refresh_token',
-    refresh_token: refreshToken,
+    refresh_token: refreshToken!,
     client_id: CLIENT_ID,
     client_secret: CLIENT_SECRET,
   });
@@ -58,10 +76,14 @@ export async function refreshAccessToken() {
     body: params,
   });
 
-  const data = await res.json();
-  if (!res.ok) throw new Error('Failed to refresh token');
-  accessToken = data.access_token;
-  refreshToken = data.refresh_token;
+  const tokenData = await safeJson<StarlingTokenResponse>(res);
+  if (!tokenData?.access_token) {
+    log().error({ err: tokenData }, 'Invalid token response format');
+    throw new Error('Invalid token response format');
+  }
+  log().info('starling_token_refresh_success');
+  accessToken = tokenData.access_token as string;
+  refreshToken = tokenData.refresh_token as string;
   return accessToken;
 }
 
@@ -76,7 +98,11 @@ export async function refreshAccessToken() {
  * @param {boolean} [retry=true] - Whether to retry the request after token refresh
  * @returns {Promise<Response>} The fetch response object
  */
-async function fetchWithTokenRefresh(url, options = {}, retry = true) {
+async function fetchWithTokenRefresh(
+  url: string,
+  options: RequestInit = {},
+  retry = true,
+): Promise<Response> {
   const headers = {
     ...options.headers,
     Authorization: `Bearer ${accessToken}`,
@@ -86,21 +112,31 @@ async function fetchWithTokenRefresh(url, options = {}, retry = true) {
   const response = await fetch(url, { ...options, headers });
   if (response.status === 401 && retry) {
     // Try to parse error body
-    let errorBody = {};
+    let errorBody: unknown = {};
     try {
-      errorBody = await response.json();
-    } catch {}
+      errorBody = await safeJson(response);
+    } catch (e: unknown) {
+      log().error({ err: e }, 'Failed to parse 401 error body');
+    }
     // Check if token expired
     if (
-      errorBody.error === 'invalid_token' &&
-      errorBody.error_description &&
-      errorBody.error_description.toLowerCase() === 'access token has expired'
+      (errorBody as Record<string, unknown>).error === 'invalid_token' &&
+      (errorBody as Record<string, unknown>).error_description &&
+      getStringField(errorBody, 'error_description')?.toLocaleLowerCase() ===
+        'access token has expired'
     ) {
+      log().warn(
+        { status: response.status },
+        'starling_token_expired_refreshing',
+      );
       await refreshAccessToken();
+      log().info('starling_request_retrying_with_new_token');
       // Retry original request with new token
       return fetchWithTokenRefresh(url, options, false);
     } else {
-      throw new Error(`${errorBody?.message || 'Unauthorized: Invalid token'}`);
+      throw new Error(
+        `${getErrorMessage(errorBody) || 'Unauthorized: Invalid token'}`,
+      );
     }
   }
   return response;
@@ -111,23 +147,29 @@ async function fetchWithTokenRefresh(url, options = {}, retry = true) {
  *
  * @export
  * @async
- * @param {string} token - Access token (parameter not used, uses internal token)
  * @returns {Promise<Array>} Array of account objects
  * @throws {Error} If the API request fails
  */
-export async function getAccounts(token) {
+export async function getAccounts(): Promise<StarlingAccount[]> {
   const url = `${API_BASE}/accounts`;
   const response = await fetchWithTokenRefresh(url, {
     method: 'GET',
   });
 
   if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`${errorBody?.message || 'Failed to get accounts'}`);
+    const errorBody = await safeJson(response);
+    log().error({ err: errorBody }, 'Failed to get accounts');
+    throw new Error(
+      `${getErrorMessage(errorBody) || 'Failed to get accounts'}`,
+    );
   }
 
-  const data = await response.json();
-  return data.accounts || [];
+  const data = await safeJson<StarlingAccountsResponse>(response);
+  if (!isRecord(data)) {
+    throw new Error('Invalid response format from accounts endpoint');
+  }
+  const accounts = data.accounts as Array<unknown>;
+  return Array.isArray(accounts) ? (accounts as StarlingAccount[]) : [];
 }
 
 /**
@@ -143,7 +185,12 @@ export async function getAccounts(token) {
  * @returns {Promise<Array>} Array of transaction feed items
  * @throws {Error} If the API request fails or returns an error
  */
-export async function fetchTransactions(accountUid, categoryUid, from, to) {
+export async function fetchTransactions(
+  accountUid: string,
+  categoryUid: string,
+  from: string,
+  to: string,
+): Promise<StarlingFeedItem[]> {
   const fromToIsoString = from.toString() + 'T00:00:00.000Z';
   const toToIsoString = to.toString() + 'T23:59:59.999Z';
 
@@ -152,15 +199,19 @@ export async function fetchTransactions(accountUid, categoryUid, from, to) {
   const response = await fetchWithTokenRefresh(url, { method: 'GET' });
 
   if (!response.ok) {
-    const errorBody = await response.json();
-    const errorMessage =
-      errorBody.errors[0]?.message || errorBody?.message || 'Unknown error';
+    const errorBody = await safeJson(response);
+    log().error({ err: errorBody }, 'Failed to fetch transactions');
+    const errorMessage = getErrorMessage(errorBody) || 'Unknown error';
 
     throw new Error(`${errorMessage}`);
   }
 
-  const data = await response.json();
-  return data.feedItems || [];
+  const data = await safeJson<StarlingFeedResponse>(response);
+  if (!isRecord(data)) {
+    throw new Error('Invalid response format from transactions endpoint');
+  }
+  const feedItems = data.feedItems as Array<unknown>;
+  return Array.isArray(feedItems) ? (feedItems as StarlingFeedItem[]) : [];
 }
 
 /**
@@ -172,18 +223,29 @@ export async function fetchTransactions(accountUid, categoryUid, from, to) {
  * @returns {Promise<Array>} Array of savings goal objects
  * @throws {Error} If the API request fails
  */
-export async function getSavingsGoals(accountUid) {
+export async function getSavingsGoals(
+  accountUid: string,
+): Promise<StarlingSavingsGoal[]> {
   const url = `${API_BASE}/account/${accountUid}/savings-goals`;
 
   const response = await fetchWithTokenRefresh(url, { method: 'GET' });
 
   if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`${errorBody?.message || 'Failed to get savings goals'}`);
+    const errorBody = await safeJson<StarlingSavingsGoalsResponse>(response);
+    log().error({ err: errorBody }, 'Failed to get savings goals');
+    throw new Error(
+      `${getErrorMessage(errorBody) || 'Failed to get savings goals'}`,
+    );
   }
 
-  const data = await response.json();
-  return data.savingsGoalList || [];
+  const data = await safeJson<StarlingSavingsGoalsResponse>(response);
+  if (!isRecord(data)) {
+    throw new Error('Invalid response format from savings goals endpoint');
+  }
+  const savingsGoalList = data.savingsGoalList as Array<unknown>;
+  return Array.isArray(savingsGoalList)
+    ? (savingsGoalList as StarlingSavingsGoal[])
+    : [];
 }
 
 /**
@@ -195,10 +257,15 @@ export async function getSavingsGoals(accountUid) {
  * @param {string} name - The name of the savings goal
  * @param {string} currency - The currency code (e.g., 'GBP', 'EUR')
  * @param {number} amount - The target amount in minor units (e.g., pence)
- * @returns {Promise<Object>} The created savings goal object
+ * @returns {Promise<StarlingCreateSavingsGoalResponse>} The created savings goal object
  * @throws {Error} If the API request fails
  */
-export async function createSavingsGoal(accountUid, name, currency, amount) {
+export async function createSavingsGoal(
+  accountUid: string,
+  name: string,
+  currency: string,
+  amount: number,
+): Promise<StarlingCreateSavingsGoalResponse> {
   const url = `${API_BASE}/account/${accountUid}/savings-goals`;
   const body = {
     name,
@@ -215,11 +282,15 @@ export async function createSavingsGoal(accountUid, name, currency, amount) {
   });
 
   if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`${errorBody?.message || 'Failed to create savings goal'}`);
+    const errorBody =
+      await safeJson<StarlingCreateSavingsGoalResponse>(response);
+    log().error({ err: errorBody }, 'Failed to create savings goal');
+    throw new Error(
+      `${getErrorMessage(errorBody) || 'Failed to create savings goal'}`,
+    );
   }
 
-  return await response.json();
+  return (await safeJson(response)) as StarlingCreateSavingsGoalResponse;
 }
 
 /**
@@ -232,15 +303,15 @@ export async function createSavingsGoal(accountUid, name, currency, amount) {
  * @param {string} savingsGoalUid - The unique identifier of the savings goal
  * @param {number} amount - The amount to transfer (will be converted to minor units)
  * @param {string} currency - The currency code (e.g., 'GBP', 'EUR')
- * @returns {Promise<Object>} The transfer response object
+ * @returns {Promise<StarlingTransferResponse>} The transfer response object
  * @throws {Error} If the API request fails
  */
 export async function transferToSavingsGoal(
-  accountUid,
-  savingsGoalUid,
-  amount,
-  currency,
-) {
+  accountUid: string,
+  savingsGoalUid: string,
+  amount: number,
+  currency: string,
+): Promise<StarlingTransferResponse> {
   const url = `${API_BASE}/account/${accountUid}/savings-goals/${savingsGoalUid}/add-money/${crypto.randomUUID()}`;
   const body = {
     amount: {
@@ -258,11 +329,12 @@ export async function transferToSavingsGoal(
   });
 
   if (!response.ok) {
-    const errorBody = await response.json();
+    const errorBody = await safeJson<StarlingTransferResponse>(response);
+    log().error({ err: errorBody }, 'Failed to transfer to savings goal');
     throw new Error(
-      `${errorBody?.message || 'Failed to transfer to savings goal'}`,
+      `${getErrorMessage(errorBody) || 'Failed to transfer to savings goal'}`,
     );
   }
 
-  return await response.json();
+  return (await safeJson<StarlingTransferResponse>(response)) ?? {};
 }

@@ -1,41 +1,41 @@
 import request from 'supertest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import app from '../server.js';
+import app from '../app.js';
 
-// Partial mock using vi.importActual
-vi.mock('../services/starling.js', async () => {
-  const actual = await vi.importActual('../services/starling.js');
-  return {
-    ...actual,
-    fetchTransactions: vi.fn(),
-  };
-});
+import * as starling from '../services/starling.js';
+vi.mock('../services/starling.js', () => ({
+  fetchTransactions: vi.fn(),
+}));
+
+const fetchTransactionsMock = vi.mocked(starling.fetchTransactions);
 
 describe('GET /api/transactions', () => {
-  let fetchTransactions;
-
   beforeEach(async () => {
-    // Always get the mock after vi.mock has run
-    ({ fetchTransactions } = await import('../services/starling.js'));
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it('should return transactions with roundUp and totalRoundUp', async () => {
-    fetchTransactions.mockResolvedValue([
+    fetchTransactionsMock.mockResolvedValue([
       {
         feedItemUid: '1',
         amount: { minorUnits: 435, currency: 'GBP' },
         reference: 'Coffee',
+        direction: 'OUT',
+        status: 'SETTLED',
       },
       {
         feedItemUid: '2',
         amount: { minorUnits: 520, currency: 'GBP' },
         reference: 'Lunch',
+        direction: 'OUT',
+        status: 'SETTLED',
       },
       {
         feedItemUid: '3',
         amount: { minorUnits: 87, currency: 'GBP' },
         reference: 'Snack',
+        direction: 'OUT',
+        status: 'SETTLED',
       },
     ]);
     const res = await request(app).get('/api/transactions').query({
@@ -61,7 +61,7 @@ describe('GET /api/transactions', () => {
   });
 
   it('should return 500 if fetchTransactions throws', async () => {
-    fetchTransactions.mockImplementation(() => {
+    fetchTransactionsMock.mockImplementation(() => {
       throw new Error('Starling API failure');
     });
 

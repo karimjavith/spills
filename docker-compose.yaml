@@ -1,0 +1,90 @@
+services:
+  tempo:
+    image: grafana/tempo:2.6.1
+    command: ["-config.file=/etc/tempo.yaml"]
+    ports:
+      - "3200:3200" # Tempo query
+      - "4317:4317" # OTLP gRPC ingest
+      - "4318:4318" # OTLP HTTP ingest
+      - "7946:7946" # 🔥 REQUIRED: memberlist ring gossip
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml:ro
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector.yaml"]
+    ports:
+      - "14317:4317"
+      - "14318:4318"
+    volumes:
+      - ./otel-collector.yaml:/etc/otel-collector.yaml:ro
+    depends_on:
+      - tempo
+  clickhouse: # log storage + analytics
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+
+    environment:
+      CLICKHOUSE_USER: obs
+      CLICKHOUSE_PASSWORD: obs_pass
+      CLICKHOUSE_DB: observability
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+  vector: # log collector + transformer
+    image: timberio/vector:latest-alpine
+    environment:
+      - VECTOR_LOG=debug
+    command: ["--config", "/etc/vector/vector.toml"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./vector.toml:/etc/vector/vector.toml:ro
+    depends_on:
+      - clickhouse
+  grafana: # query + visualization
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # Install ClickHouse datasource plugin at startup:
+      - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - clickhouse
+  server:
+    build:
+      context: ./server
+    ports:
+      - "5001:5000"
+    environment:
+      - NODE_ENV=production
+      # If your server reads PORT, set it explicitly:
+      - PORT=5000
+      - OTEL_SERVICE_NAME=spills-server
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+    env_file:
+      - ./server/.env
+
+  client:
+    build:
+      context: ./client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+volumes:
+  clickhouse_data:
+  grafana_data:

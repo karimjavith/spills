@@ -11,7 +11,5 @@
  * calculateRoundUp(199) // returns 0.01 (rounds £1.99 to £2.00)
  */
 export function calculateRoundUp(minorUnits) {
-  const amount = minorUnits / 100;
-  const rounded = Math.ceil(amount);
-  return Math.max(0, rounded - amount);
+  return ((100 - (minorUnits % 100)) % 100) / 100;
 }

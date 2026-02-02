@@ -1,33 +1,40 @@
 import request from 'supertest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import app from '../server.js';
+import app from '../app.js';
 
-vi.mock('../services/starling.js', async () => {
-  const actual = await vi.importActual('../services/starling.js');
-  return {
-    ...actual,
-    transferToSavingsGoal: vi.fn(),
-    getSavingsGoals: vi.fn(),
-    createSavingsGoal: vi.fn(),
-  };
-});
+import * as starling from '../services/starling.js';
+vi.mock('../services/starling.js', () => ({
+  getSavingsGoals: vi.fn(),
+  createSavingsGoal: vi.fn(),
+  transferToSavingsGoal: vi.fn(),
+}));
+
+const getSavingsGoalsMock = vi.mocked(starling.getSavingsGoals);
+const createSavingsGoalMock = vi.mocked(starling.createSavingsGoal);
+const transferToSavingsGoalMock = vi.mocked(starling.transferToSavingsGoal);
 
 describe('Savings Goals API', () => {
-  let getSavingsGoals, createSavingsGoal;
-
   beforeEach(async () => {
-    ({ getSavingsGoals, createSavingsGoal } =
-      await import('../services/starling.js'));
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it('should list savings goals', async () => {
-    getSavingsGoals.mockResolvedValue([{ name: 'Holiday' }]);
+    getSavingsGoalsMock.mockResolvedValue([
+      { name: 'Holiday', savingsGoalUid: 'goal1' },
+    ]);
     const res = await request(app)
       .get('/api/savings/goals')
       .query({ accountUid: '190-200' });
     expect(res.status).toBe(200);
-    expect(res.body).toEqual([{ name: 'Holiday' }]);
+    expect(res.body).toEqual([
+      {
+        name: 'Holiday',
+        id: 'goal1',
+        target: 0,
+        totalSaved: 0,
+        currency: undefined,
+      },
+    ]);
   });
 
   it('should return 400 if accountUid missing', async () => {
@@ -37,7 +44,7 @@ describe('Savings Goals API', () => {
   });
 
   it('should create a savings goal', async () => {
-    createSavingsGoal.mockResolvedValue({ savingsGoalUid: 'goal1' });
+    createSavingsGoalMock.mockResolvedValue({ savingsGoalUid: 'goal1' });
     const res = await request(app).post('/api/savings/goals').send({
       accountUid: '190-200',
       savingsGoalUid: '190-200-201',
@@ -56,7 +63,7 @@ describe('Savings Goals API', () => {
   });
 
   it('should return 500 if getSavingsGoals throws', async () => {
-    getSavingsGoals.mockImplementation(() => {
+    getSavingsGoalsMock.mockImplementation(() => {
       throw new Error('fail');
     });
     const res = await request(app)
@@ -67,7 +74,7 @@ describe('Savings Goals API', () => {
   });
 
   it('should return 500 if createSavingsGoal throws', async () => {
-    createSavingsGoal.mockImplementation(() => {
+    createSavingsGoalMock.mockImplementation(() => {
       throw new Error('fail');
     });
     const res = await request(app).post('/api/savings/goals').send({
@@ -82,15 +89,12 @@ describe('Savings Goals API', () => {
 });
 
 describe('POST /api/savings/transfer', () => {
-  let transferToSavingsGoal;
-
   beforeEach(async () => {
-    ({ transferToSavingsGoal } = await import('../services/starling.js'));
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it('should transfer to savings goal and return result', async () => {
-    transferToSavingsGoal.mockResolvedValue({ success: true });
+    transferToSavingsGoalMock.mockResolvedValue({ success: true });
 
     const res = await request(app).post('/api/savings/transfer').send({
       accountUid: '190-200',
@@ -110,7 +114,7 @@ describe('POST /api/savings/transfer', () => {
   });
 
   it('should return 500 if transferToSavingsGoal throws', async () => {
-    transferToSavingsGoal.mockImplementation(() => {
+    transferToSavingsGoalMock.mockImplementation(() => {
       throw new Error('Starling API failure');
     });
 

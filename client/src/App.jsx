@@ -28,7 +28,7 @@ export default function App() {
       // Further Enhancement for futre: We can move this fetchSavingsGoal to a hook and that can be referred back to savings goal component as well
       if (account && !account.savingsGoal) {
         try {
-          const data = await getSavingsGoals(account.accountUid);
+          const data = await getSavingsGoals(account.id);
           if (data && data.length > 0) {
             dispatch(
               setAccount({
@@ -57,9 +57,9 @@ export default function App() {
       <main className={styles.body}>
         {account && (
           <TransactionList
-            accountUid={account.accountUid}
-            categoryUid={account.defaultCategory}
-            savingsGoalUid={account.savingsGoal?.savingsGoalUid}
+            accountUid={account.id}
+            categoryUid={account.categoryId}
+            savingsGoalUid={account.savingsGoal?.id}
           />
         )}
       </main>

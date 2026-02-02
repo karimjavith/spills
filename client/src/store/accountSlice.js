@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 /**
  * To manage the currently selected account information.
@@ -7,25 +7,25 @@ import { createSlice } from '@reduxjs/toolkit';
  * @type {import('@reduxjs/toolkit').Slice}
  */
 const accountSlice = createSlice({
-  name: 'account',
+  name: "account",
   initialState: {
     account: (() => {
       try {
-        return JSON.parse(localStorage.getItem('accountInfo') || 'null');
+        return JSON.parse(localStorage.getItem("accountInfo") || "null");
       } catch {
         return null;
       }
-    })(), 
+    })(),
   },
   reducers: {
     setAccount(state, action) {
       state.account = action.payload;
-      localStorage.setItem('accountInfo', JSON.stringify(action.payload));
+      localStorage.setItem("accountInfo", JSON.stringify(action.payload));
     },
     resetAccount(state) {
       state.account = null;
-      localStorage.removeItem('accountInfo');
-    }
+      localStorage.removeItem("accountInfo");
+    },
   },
 });
 

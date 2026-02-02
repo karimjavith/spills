@@ -14,12 +14,12 @@ const API_BASE = import.meta.env.VITE_API_BASE;
  */
 export async function getAccounts() {
   const response = await fetch(`${API_BASE}/api/accounts`, {
-    method: 'GET',
-    headers: { Accept: 'application/json' },
+    method: "GET",
+    headers: { Accept: "application/json" },
   });
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch accounts');
+    throw new Error(error.error || "Failed to fetch accounts");
   }
   return await response.json();
 }
@@ -39,8 +39,8 @@ export async function getTransactions(accountUid, categoryUid, from, to) {
   const params = new URLSearchParams({
     accountUid,
     categoryUid,
-    from: new Date(from).toISOString().split('T')[0],
-    to: new Date(to).toISOString().split('T')[0],
+    from: new Date(from).toISOString().split("T")[0],
+    to: new Date(to).toISOString().split("T")[0],
   });
 
   const url = new URL(`${API_BASE}/api/transactions?${params.toString()}`);
@@ -62,13 +62,13 @@ export async function getSavingsGoals(accountUid) {
   const response = await fetch(
     `${API_BASE}/api/savings/goals?${params.toString()}`,
     {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
+      method: "GET",
+      headers: { Accept: "application/json" },
     },
   );
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch savings goals');
+    throw new Error(error.error || "Failed to fetch savings goals");
   }
   return await response.json();
 }
@@ -90,8 +90,8 @@ export async function createSavingsGoal(
   amountMinorUnits,
 ) {
   const response = await fetch(`${API_BASE}/api/savings/goals`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({
       accountUid,
       name,
@@ -101,7 +101,7 @@ export async function createSavingsGoal(
   });
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to create savings goal');
+    throw new Error(error.error || "Failed to create savings goal");
   }
   return await response.json();
 }
@@ -123,10 +123,10 @@ export async function transferToSavingsGoal(
   currency,
 ) {
   const res = await fetch(`${API_BASE}/api/savings/transfer`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
 
     body: JSON.stringify({
