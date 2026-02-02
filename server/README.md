@@ -1,78 +1,67 @@
 # Spills – Server (Express Proxy)
 
-A secure Node.js/Express proxy for a Bank's public API.  
-Handles OAuth token refresh, CORS, and structured logging.
+A **TypeScript-first, production-style Express proxy** for the Bank public API.
+
+This service acts as a secure backend gateway between the frontend and Bank’s API, handling **OAuth token lifecycle**, **round-up business logic**, and **full observability** (logs, traces, context propagation).
 
 ---
 
-## Features
+## Overview
 
-- Proxies all bank API requests from the frontend
-- Handles access token refresh using the refresh token (automatic retry on expiry)
-- Endpoints for:
-  - Listing accounts (`GET /api/accounts`)
-  - Listing and creating savings goals (`GET /api/savings/goals`, `POST /api/savings/goals`)
-  - Fetching transactions with round-up calculation (`GET /api/transactions`)
-  - Transferring to savings goals (`POST /api/savings/transfer`)
-- Structured request and error logging (using Morgan and custom middleware)
-- 404 and error handling with JSON responses
+The server is responsible for:
+
+- Securely interacting with the Bank API
+- Abstracting OAuth and token refresh away from the frontend
+- Providing domain-specific endpoints for accounts, transactions, and savings
+- Emitting structured logs and distributed traces for debugging and analysis
+
+The codebase is fully written in **TypeScript**, tested, and Docker-ready.
 
 ---
 
-## Setup
+## Key Features
 
-1. **Install dependencies:**
+### API & Business Logic
+- Secure proxy to a Bank API
+- Automatic OAuth **access token refresh** with retry
+- Typed API clients and responses
+- Round-up calculation logic on transactions
+- Savings goal creation and transfers
 
-   ```sh
-   npm install
-   ```
+### Endpoints
+- `GET /api/accounts` – List accounts
+- `GET /api/savings/goals` – List savings goals
+- `POST /api/savings/goals` – Create a savings goal
+- `GET /api/transactions` – Fetch transactions with round-up calculation
+- `POST /api/savings/transfer` – Transfer round-up amount to a savings goal
 
-2. **Configure environment variables:**
+### Observability
+- Structured logging with **Pino**
+- Async request context propagation
+- Distributed tracing with **OpenTelemetry**
+- Trace export compatible with **Grafana Tempo**
+- Request-level correlation via request IDs
+
+### Engineering Practices
+- Full TypeScript migration (no runtime JS)
+- Strong typing at API and service boundaries
+- Defensive error handling
+- Unit and integration tests
+- Docker-compatible build & runtime
+
+---
+
+## Project Structure (Server)
 
 ```sh
-- Create a  .env  file in the project root:
-- STARLING_API_BASE=https://api-sandbox.starlingbank.com/api/v2
-- STARLING_OAUTH_URL=https://oauth-sandbox.starlingbank.com/token
-- STARLING_CLIENT_ID=your_client_id
-- STARLING_CLIENT_SECRET=your_client_secret
-- STARLING_ACCESS_TOKEN=your_initial_access_token
-- STARLING_REFRESH_TOKEN=your_refresh_token
-- PORT=4000
-```
-
-3. **Start the proxy server:**
-   ```sh
-   npm run start:proxy
-   Run backend tests:
-   npm run test:proxy
-   ```
-
----
-
-### Usage
-
-- The proxy exposes all bank API endpoints at  /api/starling/\* .
-- Custom endpoints:
-  - GET /api/accounts  – List accounts
-  - GET /api/savings/goals  – List savings goals
-  - POST /api/savings/goals  – Create a savings goal
-  - GET /api/transactions  – Get transactions with round-up calculation
-  - POST /api/savings/transfer  – Transfer to a savings goal
-- Example:
-   GET http://localhost:4000/api/accounts 
-
----
-
-### Security
-
-Never expose your bank API credentials or tokens to the frontend.
-All secrets are stored in  .env  and used only on the backend.
-OAuth tokens are refreshed and managed securely by the backend.
-
----
-
-### Logging
-
-All requests and errors are logged in structured JSON format to the console.
-
----
+server/
+├── api/                    # Express route handlers
+├── services/               # Bank API integration & business logic
+├── middleware/
+│   └── observability/      # Logging, tracing, context propagation
+├── helpers/                # Shared utilities
+├── tests/                  # Unit & integration tests
+├── app.ts                  # Express app (no side effects)
+├── server.ts               # Server entry point
+├── tsconfig.json
+└── README.md               # (this file)
