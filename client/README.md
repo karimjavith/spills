@@ -1,88 +1,119 @@
-# Spills – Client
+# Spills – Client (React)
 
-A “round-up” feature for customers using the bank public developer sandbox API.
+A frontend application that implements a **“round-up savings”** experience for bank customers, powered by a secure backend proxy to the Starling Bank sandbox API.
 
-For example, with spending of **£4.35**, **£5.20**, and **£0.87**, the round-up would be **£1.58**.  
-This amount is then transferred into a savings goal, helping the customer save for future adventures.
+The client focuses on **clear state management**, **predictable data flow**, and **separation of concerns**, while keeping the UI intentionally simple.
 
-Built with Vite, CSS Modules, and a custom Express backend proxy for secure API access.
+---
+
+## What Is “Round-Up”?
+
+When a user makes card payments, each transaction is rounded up to the nearest pound.  
+The difference is accumulated and transferred into a savings goal.
+
+**Example**
+
+| Transaction | Rounded | Round-up |
+|------------|--------|----------|
+| £4.35      | £5.00  | £0.65    |
+| £5.20      | £6.00  | £0.80    |
+| £0.87      | £1.00  | £0.13    |
+| **Total**  |        | **£1.58** |
+
+That £1.58 is transferred into a savings goal via the backend proxy.
+
+---
+
+## Responsibilities of the Client
+
+The client is intentionally **thin**:
+
+- Displays account, transaction, and savings data
+- Calculates and presents round-up totals
+- Triggers actions (create goal, transfer funds)
+- Delegates all security-sensitive work to the backend
+
+It **never** talks directly to the bank API.
 
 ---
 
 ## Features
 
-- Top header bar with branding and profile modal
-- Fetches account info via a secure backend proxy
-- Preferences displayed as toggle switches (hard disabled for now, can be made dynamic for a given backend API)
+- Account selection and overview
+- Transaction feed with round-up calculation
+- Savings goals listing and creation
+- Trigger round-up transfers
+- Profile / settings modal
+- Preference toggles (currently static, designed to be backend-driven)
 
 ---
 
-## Additional Notes
+## Architecture Decisions
 
-### Redux and Local Storage
+### Backend Proxy Only
+All API requests go through the Express proxy.
 
-I chose **not** to use local storage directly for persisting the account IDs, transaction IDs, or savings goals. Instead, I managed these through the Redux store. This approach gives more flexibility and control over state management compared to direct localStorage usage.  
-Component-level states (such as loading, errors, etc.) still reside within the component itself, as I felt it would be overkill to use full-blown Redux (and asyncThunk) for this testing scenario. However, I am happy to consider it if the complexity grows.
-
----
-
-### Why Profile Section and Account Preferences?
-
-Having savings goal and round-up as feature toggles controlled via account preference settings gives end users more control over the application.  
-For this test, I set these toggles to **ON and disabled** by default. In a production setting, these preferences would ideally be managed via a backend API.
+**Why?**
+- Prevents exposing credentials
+- Handles OAuth token refresh server-side
+- Avoids CORS complexity
+- Keeps frontend logic clean and testable
 
 ---
 
-### Styles & Slickness
+### State Management (Redux)
 
-I used basic styling for this test to focus on functionality.  
-With more time, I can further refine the design and aesthetics as needed—happy to do so!
+- **Redux** is used for:
+  - account state
+  - transactions
+  - savings goals
+- **Local component state** is used for:
+  - loading flags
+  - UI errors
+  - modal visibility
 
----
+I intentionally avoided persisting domain data in `localStorage`.  
+Redux provides a clearer mental model and keeps the UI deterministic.
 
-## Setup
-
-1. **Install dependencies:**
-
-   ```sh
-   npm install
-   ```
-
-2. **Configure environment variables:**
-   Create a `.env` file in the project root:
-
-   ```
-   VITE_API_BASE_URL=http://localhost:4000
-   ```
-
-   (Adjust the URL if your backend runs on a different port.)
-
-3. **Start the dev server:**
-
-   ```sh
-   npm run dev
-   ```
-
-4. **Run tests:**
-   ```sh
-   npm run test
-   ```
+> Async thunks and heavier Redux patterns were intentionally avoided to keep complexity proportional to the problem size.
 
 ---
 
-## Tech Stack
+### Preferences & Profile
 
-- **React + Vite**
-- **CSS Modules**
-- **React Testing Library & Vitest**
-- **bank API (via backend proxy)**
+The profile section includes feature toggles such as:
+- round-up enabled
+- savings goal enabled
+
+These are **currently ON and disabled** to reflect how they *would* work in a production system, where preferences are typically driven by backend APIs rather than client-side state.
+
+---
+
+### Styling Philosophy
+
+- Basic, readable UI
+- CSS Modules for local scoping
+- Focused on correctness and clarity over polish
+
+With more time, this could be extended with:
+- design tokens
+- animations
+- accessibility refinements
 
 ---
 
-## Notes
+## Project Structure (Client)
 
-- **Do not call the bank API directly from the frontend.**  
-  All requests go through the backend proxy for security and CORS compliance.
-- For bank API credentials, see the server README.
-
----
+```sh
+client/
+├── src/
+│   ├── components/
+│   ├── features/
+│   ├── store/
+│   ├── services/          # API calls (via proxy)
+│   ├── styles/
+│   └── main.tsx
+├── tests/
+├── index.html
+├── vite.config.ts
+└── README.md              # (this file)
